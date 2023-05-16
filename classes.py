@@ -358,7 +358,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.size = (70, 120)
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.MAGENTA)
+        self.surf.fill(v.RED)
         self.rect = self.surf.get_rect(midbottom = originxy)
         self.jumpvel = v.JUMPVEL
         self.gravity = v.GRAVITY
