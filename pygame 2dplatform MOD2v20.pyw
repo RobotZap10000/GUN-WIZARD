@@ -1,5 +1,4 @@
 #TODO CHANGE
-    
     #Add BOSS
     #Optimise code
     #Add music
@@ -10,6 +9,7 @@
     #Flames and explosions shift color and fade logarithmically
 
 #DOING (Specify line num)
+    #Setting up Git repository
     #Player and enemies now don't get stuck on bottom corners
     #When the player is hit by enemy melee, they only inherit velocity if the enemy isn't stunned 
     #Flamethrower only inherits player speed if it's fired in the same direction as the player velocity
