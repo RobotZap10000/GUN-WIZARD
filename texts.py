@@ -120,6 +120,9 @@ def DrawDebugMenu():
                 #Player weapon
                 playerweapon = Text(font_debug, "Current weapon: " + str(player.weapon), v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
                 playerweapon.rect.topleft = (0, 160)
+
+                playerhealth = Text(font_debug, "Player health: " + str(player.health), v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
+                playerhealth.rect.topleft = (0, 180)
                 
         else:
             
