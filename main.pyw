@@ -30,7 +30,6 @@ vec = pygame.math.Vector2 #2 = 2D
 
 #Hiding cursor
 pygame.mouse.set_visible(0)
-
 #game clock
 FramePerSec = pygame.time.Clock()
 

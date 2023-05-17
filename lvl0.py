@@ -36,7 +36,7 @@ def StartMap():
     FLR3 = cls.MapObject((200, 24), v.RED, (1220, 600), (g.platforms, g.world_objects, g.proj_collidables))
 
     #Enemies WOOO
-    NME1 = cls.Enemy((1220, 500), ai=1)
+    NME1 = cls.Enemy((1220, 500))
     #NME1COL = cls.Collision_Shadow(NME1)
 
     #NME2 = cls.Enemy((700, 500))
