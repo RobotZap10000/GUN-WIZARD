@@ -24,7 +24,7 @@ def GetAngle(startx, starty, endx, endy): #start, end, destination
 
 #Player
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players"):
+    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
         super().__init__()
         self.size = size
         self.surf = pygame.Surface(self.size)
@@ -48,6 +48,7 @@ class Player(pygame.sprite.Sprite):
         self.immunity = 0
         self.stun = 0
         self.team = team
+        self.health = health
         g.players.add(self)
         g.all_sprites.add(self)
         g.world_objects.add(self)
@@ -353,11 +354,11 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, ai=0):
+    def __init__(self, originxy, health=60, ai=0):
         super().__init__()
         self.size = (70, 120)
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.MAGENTA)
+        self.surf.fill(v.RED)
         self.rect = self.surf.get_rect(midbottom = originxy)
         self.jumpvel = v.JUMPVEL
         self.gravity = v.GRAVITY
@@ -374,6 +375,7 @@ class Enemy(pygame.sprite.Sprite):
         self.deaggro = 1500
         self.aggrolen = 30
         self.aggroleft = self.aggrolen
+        self.health = health
         self.ai = ai
         g.all_sprites.add(self)
         g.world_objects.add(self)
