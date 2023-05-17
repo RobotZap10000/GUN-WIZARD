@@ -5,6 +5,7 @@ import groups as g
 import texts as txt
 import classes as cls
 import lvl0
+import lvl1
 
 #TODO
     #Make button activate on release X
@@ -21,9 +22,36 @@ def bruh():
 
 #Tutorial button
 def Startlvl0():
+    for entity in g.all_sprites:
+        entity.kill()
+    for entity in g.debug:
+        entity.kill()
     lvl0.StartMap()
+    v.LEVEL = 0
     v.GAMESTATE = 2
     pygame.mouse.set_visible(1)
+
+def Startlvl1():
+    for entity in g.all_sprites:
+        entity.kill()
+    for entity in g.debug:
+        entity.kill()
+    lvl1.StartMap()
+    v.LEVEL = 1
+    v.GAMESTATE = 2
+    pygame.mouse.set_visible(1)
+
+levellist = [
+    Startlvl0,
+    Startlvl1
+]
+
+def RestartLvl():
+    if isinstance(v.LEVEL, int):
+            levellist[v.LEVEL]()
+            v.PAUSED = False
+    else:
+        raise Exception("Level number is NaN")
     
 #Button class
 class Button():
@@ -63,15 +91,22 @@ class Button():
 #Button(size, origin, function, font, text, textcolor, idle, hover, press, group)
 #Level select menu
 lvl0_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+300), Startlvl0, txt.font_lvlselect, "TUTORIAL", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
-lvl1_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+400), bruh, txt.font_lvlselect, "LEVEL 1", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
+lvl1_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+400), Startlvl1, txt.font_lvlselect, "LEVEL 1", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 lvl2_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+500), bruh, txt.font_lvlselect, "BRUH", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 lvlselect_back = Button((300, 100), (v.WIDTH/9*3, v.HEIGHT/7*6), bruh, txt.font_lvlselectbig, "BACK", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 lvlselect_quit = Button((300, 100), (v.WIDTH/9*6, v.HEIGHT/7*6), bruh, txt.font_lvlselectbig, "QUIT", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 
 #In-game pause menu
 resumegame_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+400), bruh, txt.font_lvlselect, "RESUME GAME", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.pause_menu_buttons)
-return_to_lvlselect_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+500), bruh, txt.font_lvlselect, "QUIT TO MAIN MENU", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.pause_menu_buttons)
-pausemenu_quit_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+600), bruh, txt.font_lvlselect, "QUIT TO DESKTOP", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.pause_menu_buttons)
+pause_restart_level_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+500), RestartLvl, txt.font_lvlselect, "RESTART LEVEL", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.pause_menu_buttons)
+return_to_lvlselect_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+600), bruh, txt.font_lvlselect, "QUIT TO MAIN MENU", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.pause_menu_buttons)
+pausemenu_quit_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+700), bruh, txt.font_lvlselect, "QUIT TO DESKTOP", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.pause_menu_buttons)
+
+#Death screen menu
+death_restart_level_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+400), RestartLvl, txt.font_lvlselect, "RESTART LEVEL", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.death_menu_buttons)
+death_return_to_lvlselect_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+500), bruh, txt.font_lvlselect, "QUIT TO MAIN MENU", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.death_menu_buttons)
+deathmenu_quit_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+600), bruh, txt.font_lvlselect, "QUIT TO DESKTOP", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.death_menu_buttons)
+
 #Use class inheritance here?
 darkened_screen = cls.MapObject((v.WIDTH, v.HEIGHT), v.BLACK, (v.WIDTH/2, v.HEIGHT/2), g.screens)
 darkened_screen.surf.set_alpha(128)
@@ -82,10 +117,15 @@ def DrawLvlSelect():
         button.process()
 
 def DrawPauseMenu():
-    if v.PAUSED == True:
+    if len(list(g.players)) > 0:
+        if v.PAUSED == True:
+            displaysurface.blit(darkened_screen.surf, darkened_screen.rect)
+            for button in g.pause_menu_buttons:
+                button.process()
+
+def DrawDeathMenu():
+    if len(list(g.players)) == 0:
+        v.PAUSED = False
         displaysurface.blit(darkened_screen.surf, darkened_screen.rect)
-        for button in g.pause_menu_buttons:
+        for button in g.death_menu_buttons:
             button.process()
-        
-        
-        

@@ -98,6 +98,11 @@ class Player(pygame.sprite.Sprite):
     #Player collision
     def update(self):
 
+        if self.health <= 0:
+            self.health = 0
+            self.collision.kill()
+            self.kill()
+
         if self.immunity > 0:
             self.immunity -= 1
 
@@ -316,7 +321,7 @@ class Player(pygame.sprite.Sprite):
                 PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 10), flame=True)
                 
             if self.weapon == 3:
-                PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 0, (5, 0),explosive=True)
+                PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 40, (5, 0),explosive=True)
                 
     
 #Player collision shadow:
@@ -490,8 +495,6 @@ class Enemy(pygame.sprite.Sprite):
                             self.aim = GetAngle(self.pos.x, self.pos.y, player.pos.x, player.pos.y)
                             self.shoot()
 
-                    if self.cycle == 1:
-                        print(str(self.health))
                     
     #Fire!              
     def shoot(self):
@@ -500,6 +503,11 @@ class Enemy(pygame.sprite.Sprite):
         
     #Enemy collision
     def update(self):
+
+        if self.health <= 0:
+            self.health = 0
+            self.collision.kill()
+            self.kill()
 
         if self.proj_immunity > 0:
             self.proj_immunity -= 1

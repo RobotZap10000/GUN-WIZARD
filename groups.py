@@ -46,6 +46,7 @@ bottom_scroll_limits = pygame.sprite.Group()
 #Button groups
 lvl_select_buttons = []
 pause_menu_buttons = []
+death_menu_buttons = []
 
 #Dark screen(?)
 screens = pygame.sprite.Group()
