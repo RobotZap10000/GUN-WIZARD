@@ -12,7 +12,7 @@ vec = pygame.math.Vector2 #2 = 2D
 vec3 = pygame.math.Vector3
         
 #Get angle
-def GetAngle(startx, starty, endx, endy): #start, end, destination    
+def GetAngle(startx, starty, endx, endy): #start, end
     #Getting angle
     dx = startx - endx
     dy = starty - endy
@@ -39,7 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.standing = True
         self.wall = False
         self.ceiling = False
-        self.firerate = 0 #12 #3 #In ticks
+        self.firerate = 0 #What is this used for?
         self.firedelay = 0 #In ticks
         self.aim = 0
         self.weapon = 1
@@ -122,6 +122,7 @@ class Player(pygame.sprite.Sprite):
                         self.kb_vel = self.kb_vel.rotate(self.kb_rot)
                         self.vel += self.kb_vel
                         self.hitsexp[0].affected.append(self)
+                        self.health -= self.hitsexp[0].dmg
                         
                         self.immunity = self.iframes
                         self.stun = self.hitsexp[0].kb[1]
@@ -143,6 +144,7 @@ class Player(pygame.sprite.Sprite):
                     if self.hitsenemy[0].stun <= 0:
                         self.vel += self.hitsenemy[0].vel
                 self.vel += self.kb_vel
+                self.health -= self.hitsenemy[0].melee_dmg
                 
                 self.immunity = self.iframes
                 self.stun = self.hitsenemy[0].kb[1]
@@ -160,6 +162,7 @@ class Player(pygame.sprite.Sprite):
                     self.kb_vel = vec(0, self.hitsproj[0].kb[0])
                     self.kb_vel = self.kb_vel.rotate(self.kb_rot)
                     self.vel += self.kb_vel
+                    self.health -= self.hitsproj[0].dmg
                     
                     self.immunity = self.iframes
                     self.stun = self.hitsproj[0].kb[1]
@@ -358,12 +361,12 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.size = (70, 120)
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.RED)
+        self.surf.fill(v.MAGENTA)
         self.rect = self.surf.get_rect(midbottom = originxy)
         self.jumpvel = v.JUMPVEL
         self.gravity = v.GRAVITY
         self.kb = (10, 20, True)
-        self.iframes = 5
+        self.iframes = 1
         self.proj_immunity = 0
         self.exp_immunity = 0
         self.stun = 0
@@ -376,6 +379,7 @@ class Enemy(pygame.sprite.Sprite):
         self.aggrolen = 30
         self.aggroleft = self.aggrolen
         self.health = health
+        self.melee_dmg = 20
         self.ai = ai
         g.all_sprites.add(self)
         g.world_objects.add(self)
@@ -485,6 +489,9 @@ class Enemy(pygame.sprite.Sprite):
                         if self.cycle > 120:
                             self.aim = GetAngle(self.pos.x, self.pos.y, player.pos.x, player.pos.y)
                             self.shoot()
+
+                    if self.cycle == 1:
+                        print(str(self.health))
                     
     #Fire!              
     def shoot(self):
@@ -523,6 +530,7 @@ class Enemy(pygame.sprite.Sprite):
                         self.kb_vel = self.kb_vel.rotate(self.kb_rot)
                         self.vel += self.kb_vel
                         self.hitsexp[0].affected.append(self)
+                        self.health -= self.hitsexp[0].dmg
                         
                         self.exp_immunity = self.iframes
                         self.stun = self.hitsexp[0].kb[1]
@@ -533,22 +541,27 @@ class Enemy(pygame.sprite.Sprite):
             self.hitsproj = pygame.sprite.spritecollide(self, g.projectiles, False)
             if self.hitsproj:
                 if self.hitsproj[0].team != self.team:
-                    #RESET KB VEC ROT
-                    self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
-                    self.kb_angle = GetAngle(self.hitsproj[0].pos.x, self.hitsproj[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
-                    self.kb_rot = self.kb_angle
-                    self.kb_vel = vec(0, self.hitsproj[0].kb[0])
-                    self.kb_vel = self.kb_vel.rotate(self.kb_rot)
-                    self.vel += self.kb_vel
-                    
-                    self.proj_immunity = self.iframes
-                    self.stun = self.hitsproj[0].kb[1]
-                    self.collision.move()
+                    if self.hitsproj[0].flame and self not in self.hitsproj[0].affected or not self.hitsproj[0].flame:
+                
+                        #RESET KB VEC ROT
+                        self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
+                        self.kb_angle = GetAngle(self.hitsproj[0].pos.x, self.hitsproj[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
+                        self.kb_rot = self.kb_angle
+                        self.kb_vel = vec(0, self.hitsproj[0].kb[0])
+                        self.kb_vel = self.kb_vel.rotate(self.kb_rot)
+                        self.vel += self.kb_vel
+                        
+                        self.proj_immunity = self.iframes
+                        self.stun = self.hitsproj[0].kb[1]
+                        self.collision.move()
+                        self.health -= self.hitsproj[0].dmg
 
-                    if not self.hitsproj[0].flame:
-                        if self.hitsproj[0].explosive:
-                            EXPLSN = Explosion(self.hitsproj[0])
-                        self.hitsproj[0].kill()
+                        if not self.hitsproj[0].flame:
+                            if self.hitsproj[0].explosive:
+                                EXPLSN = Explosion(self.hitsproj[0])
+                            self.hitsproj[0].kill()
+                        else:
+                            self.hitsproj[0].affected.append(self)
             
         self.rect = self.surf.get_rect()
         self.hitsplatform = pygame.sprite.spritecollide(self.collision, g.platforms, False)
@@ -696,6 +709,7 @@ class Projectile(pygame.sprite.Sprite):
         self.kb_vel = vec(0, 0)
         self.kb_rot = 0
         self.kb = kb
+        self.dmg = 1
         self.pos = vec(self.rect.center)
         self.life = life
         self.lifeleft = life
@@ -710,6 +724,8 @@ class Projectile(pygame.sprite.Sprite):
         self.shooter = shooter
         self.team = self.shooter.team
         self.flame = flame
+        if self.flame:
+            self.affected = []
         self.explosive = explosive
         self.noclip = noclip
         self.rotation = rot #270 #Clockwise
@@ -729,7 +745,7 @@ class Projectile(pygame.sprite.Sprite):
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.projectiles.add(self)
-        shooter.firedelay = firerate
+        shooter.firedelay = firerate #Caused funny bug with old NME
 
     def move(self):
         #CAUSED FUN BUG self.trueacc += self.vel * self.fric
@@ -797,6 +813,7 @@ class Explosion(pygame.sprite.Sprite):
         self.life = 30
         self.lifeleft = self.life
         self.kb = (40, 30, False)
+        self.dmg = 30
         self.team = self.target.team
         self.pos = vec(self.rect.center)
         self.affected = []
@@ -820,6 +837,8 @@ class Explosion(pygame.sprite.Sprite):
             self.lifeleft -= 1
             if self.lifeleft <= self.life * 2 / 3:
                 self.kb = (20, 30, False)
+                self.dmg = 15
                 if self.lifeleft <= self.life / 3:
                     self.kb = (0, 0, False)
+                    self.dmg = 0
         
