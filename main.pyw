@@ -6,8 +6,6 @@ import variables as v
 import texts as txt
 import groups as g
 import menus as menu
-import classes as cls
-import lvl0
 import platform as pyplatform
 
 #Version checking
@@ -52,9 +50,12 @@ def ReturnToTitle():
     v.GAMESTATE = 0
     v.PAUSED = False
     pygame.mouse.set_visible(0)
+    v.LEVEL = None
 
 def TogglePause():
     v.PAUSED = not v.PAUSED
+    for button in g.pause_menu_buttons:
+        button.pressing = False
 
 def ToggleDebug():
     v.DEBUG = not v.DEBUG
@@ -70,6 +71,7 @@ def ReturnToLvlSelect():
     v.GAMESTATE = 1
     v.PAUSED = False
     pygame.mouse.set_visible(1)
+    v.LEVEL = None
 
 def ScrollScreen():
     if len(g.players) > 0:
@@ -116,6 +118,9 @@ menu.lvlselect_back.function = ReturnToTitle
 menu.resumegame_button.function = TogglePause
 menu.return_to_lvlselect_button.function = ReturnToLvlSelect
 menu.pausemenu_quit_button.function = QuitGame
+
+menu.death_return_to_lvlselect_button.function = ReturnToLvlSelect
+menu.deathmenu_quit_button.function = QuitGame
 
 #Game loop
 
@@ -282,7 +287,6 @@ while True:
                 if event.key == pygame.K_h:
                     for nme in g.enemies:
                         nme.dropping = False
-                    
 
         if v.PAUSED == False:
             
@@ -335,9 +339,11 @@ while True:
 
         #Pause menu buttons
         menu.DrawPauseMenu()
+        menu.DrawDeathMenu()
 
         #Pause menu text
         txt.DrawPauseMenu()
+        txt.DrawDeathMenu()
 
         #debug menu
         v.FRAMESCOUNTED = str((round(FramePerSec.get_fps(), 1))) #LAZY FIX

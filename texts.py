@@ -52,6 +52,10 @@ text0 = Text(font_lvlselectbig, "SELECT A LEVEL:", v.TITLEGREEN, (v.WIDTH/2, v.H
 pause_text = font_title.render("PAUSED", True, v.RED)
 pause_rect = pause_text.get_rect(center=(v.WIDTH/2, (v.HEIGHT/2-100)))
 
+#Death menu text
+death_text = font_title.render("YOU DIED!", True, v.RED)
+death_rect = death_text.get_rect(center=(v.WIDTH/2, (v.HEIGHT/2-100)))
+
 #Text drawing
 def DrawText(textlist, rectlist):
     for text, rect in zip(textlist, rectlist):
@@ -155,4 +159,7 @@ def DrawPauseMenu():
     if v.PAUSED == True:
         displaysurface.blit(pause_text, pause_rect)
 
+def DrawDeathMenu():
+    if len(list(g.players)) == 0:
+        displaysurface.blit(death_text, death_rect)
 
