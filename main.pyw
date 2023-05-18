@@ -8,20 +8,6 @@ import groups as g
 import menus as menu
 import platform as pyplatform
 
-#Version checking
-#3.11.2
-#2.2.0
-if pyplatform.python_version() == "3.11.2":
-    print("Python fully compatible.")
-else:
-    print("!WARNING! Python version may be incompatible!")
-
-if pygame.__version__ == "2.2.0":
-    print("Pygame fully compatible.")
-else:
-    print("!WARNING! Pygame version may be incompatible!")
-
-
 #initializing
 pygame.init()
 vec = pygame.math.Vector2 #2 = 2D

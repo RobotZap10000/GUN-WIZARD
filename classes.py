@@ -49,6 +49,9 @@ class Player(pygame.sprite.Sprite):
         self.stun = 0
         self.team = team
         self.health = health
+        self.mana = 100
+        self.manawait = 240
+        self.lastfired = self.manawait
         g.players.add(self)
         g.all_sprites.add(self)
         g.world_objects.add(self)
@@ -103,11 +106,19 @@ class Player(pygame.sprite.Sprite):
             self.collision.kill()
             self.kill()
 
-        if self.immunity > 0:
-            self.immunity -= 1
+        self.immunity -= 1
+        self.immunity = max(self.immunity, 0)
 
-        if self.stun > 0:
-            self.stun -= 1
+        self.stun -= 1
+        self.stun = max(self.stun, 0)
+
+        self.lastfired += 1
+        self.lastfired = min(self.lastfired, self.manawait)
+
+            
+        self.mana += (self.lastfired / self.manawait)
+        self.mana = round(self.mana, 1)
+        self.mana = min(max(self.mana, 0), 100)
 
         self.lastpos = vec(self.pos)
 
@@ -315,13 +326,18 @@ class Player(pygame.sprite.Sprite):
             #(self, size, color, acc, gravity, rot, vel, maxvel, inherit, life, shooter, firerate, knockback, flame)
         
             if self.weapon == 1:
-                PLAYERMAGIC = Projectile((50, 50), v.GREEN, (0, 0.5), None, self.aim, (0, 0), 20, None, 180, self, 12, (2, 10))
+                if self.mana >= 6: 
+                    PLAYERMAGIC = Projectile((50, 50), v.GREEN, (0, 0.5), None, self.aim, (0, 0), 20, None, 180, self, 12, (2, 10), cost=6, dmg=5)
 
             if self.weapon == 2:
-                PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 10), flame=True)
+                if self.mana >= 0.6:
+                    PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 10), cost=0.6, dmg=2, flame=True)
                 
             if self.weapon == 3:
-                PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 40, (5, 0),explosive=True)
+                if self.mana >= 40:
+                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 40, (5, 0), cost=40, dmg=10, explosive=True)
+
+        self.lastfired = 0
                 
     
 #Player collision shadow:
@@ -701,7 +717,7 @@ class MapObject(pygame.sprite.Sprite):
 
 #Projectile class?
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, size, color, acc, gravity, rot, vel, maxvel, inherit, life, shooter, firerate, kb, flame=False, explosive=False, noclip=False):
+    def __init__(self, size, color, acc, gravity, rot, vel, maxvel, inherit, life, shooter, firerate, kb, cost=20 ,dmg=1, flame=False, explosive=False, noclip=False):
         super().__init__()
         self.size = vec(size)
         self.surf = pygame.Surface(self.size)
@@ -717,7 +733,7 @@ class Projectile(pygame.sprite.Sprite):
         self.kb_vel = vec(0, 0)
         self.kb_rot = 0
         self.kb = kb
-        self.dmg = 1
+        self.dmg = dmg
         self.pos = vec(self.rect.center)
         self.life = life
         self.lifeleft = life
@@ -753,7 +769,9 @@ class Projectile(pygame.sprite.Sprite):
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.projectiles.add(self)
-        shooter.firedelay = firerate #Caused funny bug with old NME
+        if shooter in g.players:
+            shooter.firedelay = firerate #Caused funny bug with old NME
+            shooter.mana -= cost
 
     def move(self):
         #CAUSED FUN BUG self.trueacc += self.vel * self.fric
@@ -821,7 +839,7 @@ class Explosion(pygame.sprite.Sprite):
         self.life = 30
         self.lifeleft = self.life
         self.kb = (40, 30, False)
-        self.dmg = 30
+        self.dmg = 20
         self.team = self.target.team
         self.pos = vec(self.rect.center)
         self.affected = []
@@ -845,7 +863,7 @@ class Explosion(pygame.sprite.Sprite):
             self.lifeleft -= 1
             if self.lifeleft <= self.life * 2 / 3:
                 self.kb = (20, 30, False)
-                self.dmg = 15
+                self.dmg = 10
                 if self.lifeleft <= self.life / 3:
                     self.kb = (0, 0, False)
                     self.dmg = 0
