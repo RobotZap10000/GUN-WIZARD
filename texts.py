@@ -1,9 +1,8 @@
-import pygame, sys
+import pygame
 from pygame.locals import *
-import random, time
 import variables as v
 import groups as g
-import classes as cls
+import platform as pyplatform
 
 pygame.init()
 
@@ -15,6 +14,7 @@ displaysurface = pygame.display.set_mode((v.WIDTH, v.HEIGHT))
 
 #Text fonts 
 font_debug = pygame.font.SysFont("Verdana", 20)
+font_version = pygame.font.SysFont("Verdana", 20)
 font_title = pygame.font.Font("upheavtt.ttf", 250)
 font_subtitle = pygame.font.Font("upheavtt.ttf", 60)
 font_lvlselect = pygame.font.Font("upheavtt.ttf", 50)
@@ -45,8 +45,32 @@ lvl_select_rects = []
 
 #Level select
 titletext = Text(font_title, "GUN WIZARD", v.TITLEGREEN, (v.WIDTH/2, v.HEIGHT/5), lvl_select_texts, lvl_select_rects)
-
 text0 = Text(font_lvlselectbig, "SELECT A LEVEL:", v.TITLEGREEN, (v.WIDTH/2, v.HEIGHT/5+110), lvl_select_texts, lvl_select_rects)
+#IF INCOMPATIBLE
+    #WARNING TEXT
+incompatible = 0
+
+#Python version
+if pyplatform.python_version() == "3.11.2":
+    python_version_text = Text(font_version, "Python " + pyplatform.python_version(), v.TITLEGREEN, (0, 0), lvl_select_texts, lvl_select_rects)
+else:
+    python_version_text = Text(font_version, "Python " + pyplatform.python_version(), v.RED, (0, 0), lvl_select_texts, lvl_select_rects)
+    incompatible = 1
+
+python_version_text.rect.bottomright = (v.WIDTH, v.HEIGHT - 20)
+
+#Pygame version
+if pygame.__version__ == "2.2.0":
+    pygame_version_text = Text(font_version, "Pygame " + pygame.__version__, v.TITLEGREEN, (0, 0), lvl_select_texts, lvl_select_rects)
+else:
+    pygame_version_text = Text(font_version, "Pygame " + pygame.__version__, v.RED, (0, 0), lvl_select_texts, lvl_select_rects)
+    incompatible = 1
+
+if incompatible == 1:
+    incomp_text = Text(font_version, "!WARNING! May be incompatible with installed version", v.RED, (0, 0), lvl_select_texts, lvl_select_rects)
+    incomp_text.rect.bottomright = (v.WIDTH, v.HEIGHT - 40)
+
+pygame_version_text.rect.bottomright = (v.WIDTH, v.HEIGHT)
 
 #Pause menu text
 pause_text = font_title.render("PAUSED", True, v.RED)
