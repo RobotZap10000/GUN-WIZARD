@@ -514,7 +514,7 @@ class Enemy(pygame.sprite.Sprite):
                     
     #Fire!              
     def shoot(self):
-        NMEMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim, (0, 10), 30, None, 180, self, 0, (10, 10), noclip=True)
+        NMEMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True)
 
         
     #Enemy collision
