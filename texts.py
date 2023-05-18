@@ -151,6 +151,12 @@ def DrawDebugMenu():
 
                 playerhealth = Text(font_debug, "Player health: " + str(player.health), v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
                 playerhealth.rect.topleft = (0, 180)
+
+                playermana = Text(font_debug, "Player mana: " + str(player.mana), v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
+                playermana.rect.topleft = (0, 200)
+
+                playerlastfire = Text(font_debug, "Last fired: " + str(player.lastfired), v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
+                playerlastfire.rect.topleft = (0, 220)
                 
         else:
             
