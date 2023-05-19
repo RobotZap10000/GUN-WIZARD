@@ -327,12 +327,12 @@ class Player(pygame.sprite.Sprite):
         
             if self.weapon == 1:
                 if self.mana >= 6: 
-                    PLAYERMAGIC = Projectile((50, 50), v.GREEN, (0, 0.5), None, self.aim, (0, 0), 20, None, 180, self, 12, (2, 10), cost=6, dmg=5)
+                    PLAYERMAGIC = Projectile((50, 50), v.GREEN, (0, 0.5), None, self.aim, (0, 0), 20, None, 180, self, 12, (2, 10), cost=6, dmg=4)
                     self.lastfired = 0
 
             if self.weapon == 2:
                 if self.mana >= 0.6:
-                    PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 10), cost=0.6, dmg=2, flame=True)
+                    PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0.6, dmg=6, flame=True)
                     self.lastfired = 0
 
             if self.weapon == 3:
@@ -736,7 +736,8 @@ class Projectile(pygame.sprite.Sprite):
         self.kb_vel = vec(0, 0)
         self.kb_rot = 0
         self.kb = kb
-        self.dmg = dmg
+        self.initdmg = dmg
+        self.dmg = self.initdmg
         self.pos = vec(self.rect.center)
         self.life = life
         self.lifeleft = life
@@ -829,6 +830,9 @@ class Projectile(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center = self.pos)
         self.alpha = 255 /self.life*self.lifeleft
         self.surf.set_alpha(self.alpha)
+        if self.lifeleft <= self.life/3*2:
+            self.dmg = self.initdmg/2
+
 
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30):
