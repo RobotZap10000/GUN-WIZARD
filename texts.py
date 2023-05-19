@@ -162,32 +162,7 @@ def DrawDebugMenu():
                 playerlastfire = Text(font_debug, "Last fired: " + str(player.lastfired), v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
                 playerlastfire.rect.topleft = (0, 220)
                 
-        else:
-            
-            playerscreencoords = Text(font_debug, "Player-to-screen [x, y]: None", v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
-            playerscreencoords.rect.topleft = (0, 20)
-
-            playerlevelcoords = Text(font_debug, "Player-to-level [x, y]: None", v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
-            playerlevelcoords.rect.topleft = (0, 40)
-
-            playervel = Text(font_debug, "Player velocity [x, y]: None", v.TITLEGREEN, (0, 0), debugvars, debugvar_rects)
-            playervel.rect.topleft = (0, 60)
-
-            
-
-        #Debug menu drawing OPTIMISE?
-        #debugmenupos = 0
-        #while debugmenupos < len(debugvars):
-            #displaysurface.blit(debugvars[debugmenupos], (0, (debugmenupos*20)))
-            #debugmenupos += 1
         DrawText(debugvars, debugvar_rects)
-            
-        #for entity in g.debug:
-        #    entity.surf.set_alpha(255)
-
-    #else:
-        #for entity in g.debug:
-        #    entity.surf.set_alpha(0)
 
 def DrawPauseMenu():
     if v.PAUSED == True:
