@@ -129,7 +129,7 @@ class Player(pygame.sprite.Sprite):
             self.hitsexp = pygame.sprite.spritecollide(self.collision, g.explosions, False)
             if self.hitsexp:
                 if self not in self.hitsexp[0].affected:
-                    if self.hitsexp[0].kb[0] != 0:
+                    if self.hitsexp[0].dmg != 0:
                         #RESET KB VEC ROT
                         self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
                         self.kb_angle = GetAngle(self.hitsexp[0].pos.x, self.hitsexp[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
@@ -186,7 +186,7 @@ class Player(pygame.sprite.Sprite):
 
                     if not self.hitsproj[0].flame:
                         if self.hitsproj[0].explosive:
-                            EXPLSN = Explosion(self.hitsproj[0])
+                            EXPLSN = Explosion(self.hitsproj[0], self.hitsproj[0].explosive[0], self.hitsproj[0].explosive[1], self.hitsproj[0].explosive[2], self.hitsproj[0].explosive[3], self.hitsproj[0].explosive[4],self.hitsproj[0].explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
                         self.hitsproj[0].kill()
 
 
@@ -328,16 +328,19 @@ class Player(pygame.sprite.Sprite):
             if self.weapon == 1:
                 if self.mana >= 6: 
                     PLAYERMAGIC = Projectile((50, 50), v.GREEN, (0, 0.5), None, self.aim, (0, 0), 20, None, 180, self, 12, (2, 10), cost=6, dmg=5)
+                    self.lastfired = 0
 
             if self.weapon == 2:
                 if self.mana >= 0.6:
                     PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 10), cost=0.6, dmg=2, flame=True)
-                
+                    self.lastfired = 0
+
             if self.weapon == 3:
                 if self.mana >= 40:
-                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 40, (5, 0), cost=40, dmg=10, explosive=True)
+                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 40, (5, 0), cost=40, dmg=10, explosive=(50, 150, 30, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
+                    self.lastfired = 0
 
-        self.lastfired = 0
+        
                 
     
 #Player collision shadow:
@@ -582,7 +585,7 @@ class Enemy(pygame.sprite.Sprite):
 
                         if not self.hitsproj[0].flame:
                             if self.hitsproj[0].explosive:
-                                EXPLSN = Explosion(self.hitsproj[0])
+                                EXPLSN = Explosion(self.hitsproj[0], self.hitsproj[0].explosive[0], self.hitsproj[0].explosive[1], self.hitsproj[0].explosive[2], self.hitsproj[0].explosive[3], self.hitsproj[0].explosive[4],self.hitsproj[0].explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30) 
                             self.hitsproj[0].kill()
                         else:
                             self.hitsproj[0].affected.append(self)
@@ -792,7 +795,8 @@ class Projectile(pygame.sprite.Sprite):
             if hitsobj:
                 #Create explosion
                 if self.explosive:
-                    EXPLSN = Explosion(self)
+                    #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
+                    EXPLSN = Explosion(self, self.explosive[0], self.explosive[1], self.explosive[2], self.explosive[3], self.explosive[4],self.explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
                 self.kill()
 
     def update(self):
@@ -813,7 +817,7 @@ class Projectile(pygame.sprite.Sprite):
         
         if self.lifeleft <= 0:
             if self.explosive:
-                EXPLSN = Explosion(self)
+                EXPLSN = Explosion(self, self.explosive[0], self.explosive[1], self.explosive[2], self.explosive[3], self.explosive[4],self.explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
             self.kill()
         else:
             self.lifeleft -= 1
@@ -827,19 +831,22 @@ class Projectile(pygame.sprite.Sprite):
         self.surf.set_alpha(self.alpha)
 
 class Explosion(pygame.sprite.Sprite):
-    def __init__(self, target):
+    def __init__(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30):
         super().__init__()
         self.target = target
-        self.size = vec(50, 50)
-        self.maxsize = vec(150, 150)
+        self.size = vec(size, size)
+        self.maxsize = vec(maxsize, maxsize)
         self.surf = pygame.Surface(self.size)
         self.surf.fill(v.ORANGE)
         self.rect = self.surf.get_rect(center = self.target.rect.center)
         self.pos = vec(self.rect.center)
-        self.life = 30
+        self.life = life
         self.lifeleft = self.life
-        self.kb = (40, 30, False)
-        self.dmg = 20
+        self.initkb = kb #Bool = speed inheritance???????
+        self.kb = (self.initkb, stun, True) 
+        self.initstun = stun
+        self.initdmg = dmg
+        self.dmg = self.initdmg
         self.team = self.target.team
         self.pos = vec(self.rect.center)
         self.affected = []
@@ -862,9 +869,9 @@ class Explosion(pygame.sprite.Sprite):
         else:
             self.lifeleft -= 1
             if self.lifeleft <= self.life * 2 / 3:
-                self.kb = (20, 30, False)
-                self.dmg = 10
+                self.kb = (self.initkb/2, self.initstun, True)
+                self.dmg = self.initdmg/2
                 if self.lifeleft <= self.life / 3:
-                    self.kb = (0, 0, False)
+                    self.kb = (0, 0, True)
                     self.dmg = 0
         
