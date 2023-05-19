@@ -6,6 +6,7 @@ import variables as v
 import texts as txt
 import groups as g
 import classes as cls
+import functions as func
 
 #initializing
 pygame.init()
@@ -41,3 +42,11 @@ def StartMap():
     SCROLL_TOP = cls.MapObject((30, 30), v.CYAN, (v.WIDTH/2, -300), (g.debug, g.world_objects, g.top_scroll_limits))
     SCROLL_LEFT = cls.MapObject((30, 30), v.CYAN, (-v.WIDTH+700, v.HEIGHT/2), (g.debug, g.world_objects, g.left_scroll_limits))
     SCROLL_RIGHT = cls.MapObject((30, 30), v.CYAN, (v.WIDTH*2-700, v.HEIGHT/2), (g.debug, g.world_objects, g.right_scroll_limits))
+
+    TRG1 = cls.MapObject((20, 20), v.ORANGE, (500, 500), (g.world_objects, g.debug, g.triggers))
+    TRG1.function = func.Victory
+    TRG1.surf.set_alpha(128)
+
+    if v.DEBUG:
+        for debug in g.debug:
+            g.all_sprites.add(debug)
