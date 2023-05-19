@@ -30,7 +30,7 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.Surface(self.size)
         self.surf.fill(color)
         self.alpha = 255
-        self.rect = self.surf.get_rect()
+        self.rect = self.surf.get_rect(midbottom = (v.WIDTH/2,v.HEIGHT-150))
         self.jumpvel = jumpvel
         self.gravity = gravity
         self.jumping = False
@@ -58,7 +58,7 @@ class Player(pygame.sprite.Sprite):
         g.knockback.add(self)
 
         #Player physics
-        self.pos = vec((v.WIDTH/2,v.HEIGHT-150))
+        self.pos = vec(self.rect.midbottom)
         self.vel = vec(0,0)
         self.kb_vel = vec(0,0)
         self.kb_rot = 0

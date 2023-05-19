@@ -40,9 +40,10 @@ def ReturnToLvlSelect():
 
 #Toggle pause menu
 def TogglePause():
-    v.PAUSED = not v.PAUSED
-    for button in g.pause_menu_buttons:
-        button.pressing = False
+    if not v.VICTORY:
+        v.PAUSED = not v.PAUSED
+        for button in g.pause_menu_buttons:
+            button.pressing = False
 
 #Toggle debug menu
 def ToggleDebug():
