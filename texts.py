@@ -169,7 +169,7 @@ def DrawPauseMenu():
         displaysurface.blit(pause_text, pause_rect)
 
 def DrawDeathMenu():
-    if v.DEAD:
+    if v.DEAD and not v.VICTORY:
         displaysurface.blit(death_text, death_rect)
 
 

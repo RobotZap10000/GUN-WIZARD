@@ -83,14 +83,14 @@ def DrawLvlSelect():
         button.process()
 
 def DrawPauseMenu():
-    if len(list(g.players)) > 0:
+    if not v.DEAD or v.VICTORY:
         if v.PAUSED == True:
             displaysurface.blit(darkened_screen.surf, darkened_screen.rect)
             for button in g.pause_menu_buttons:
                 button.process()
 
 def DrawDeathMenu():
-    if v.DEAD:
+    if v.DEAD and not v.VICTORY:
         v.PAUSED = False
         displaysurface.blit(darkened_screen.surf, darkened_screen.rect)
         for button in g.death_menu_buttons:
