@@ -15,6 +15,7 @@ players = pygame.sprite.Group()
 floors = pygame.sprite.Group()
 walls = pygame.sprite.Group()
 ceilings = pygame.sprite.Group()
+triggers = pygame.sprite.Group()
 
 #Projectile groups
 projectiles = pygame.sprite.Group()

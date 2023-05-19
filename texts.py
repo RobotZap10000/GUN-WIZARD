@@ -80,6 +80,10 @@ pause_rect = pause_text.get_rect(center=(v.WIDTH/2, (v.HEIGHT/2-100)))
 death_text = font_title.render("YOU DIED!", True, v.RED)
 death_rect = death_text.get_rect(center=(v.WIDTH/2, (v.HEIGHT/2-100)))
 
+#Victory text
+victory_text = font_title.render("VICTORY!", True, v.TITLEGREEN)
+victory_rect = victory_text.get_rect(center=(v.WIDTH/2, (v.HEIGHT/2)))
+
 #Text drawing
 def DrawText(textlist, rectlist):
     for text, rect in zip(textlist, rectlist):
@@ -190,6 +194,10 @@ def DrawPauseMenu():
         displaysurface.blit(pause_text, pause_rect)
 
 def DrawDeathMenu():
-    if len(list(g.players)) == 0:
+    if v.DEAD:
         displaysurface.blit(death_text, death_rect)
 
+
+def DrawVictoryText():
+    if v.VICTORY:
+        displaysurface.blit(victory_text, victory_rect)

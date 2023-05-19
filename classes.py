@@ -102,11 +102,6 @@ class Player(pygame.sprite.Sprite):
     #Player collision
     def update(self):
 
-        if self.health <= 0:
-            self.health = 0
-            self.collision.kill()
-            self.kill()
-
         self.immunity -= 1
         self.immunity = max(self.immunity, 0)
 
@@ -210,6 +205,7 @@ class Player(pygame.sprite.Sprite):
         self.hitsfloor = pygame.sprite.spritecollide(self.collision, g.floors, False)
         self.hitswall = pygame.sprite.spritecollide(self.collision, g.walls, False)
         self.hitsceiling = pygame.sprite.spritecollide(self.collision, g.ceilings, False)
+        self.hitstrg = pygame.sprite.spritecollide(self.collision, g.triggers, False)
 
         #numba = 0 i hate this so much
         self.standing = False
@@ -284,6 +280,10 @@ class Player(pygame.sprite.Sprite):
                 self.kb_vel.y = 0
                 self.ceiling = True
                 self.collision.move()
+
+        if self.hitstrg:
+            self.hitstrg[0].function()
+            self.hitstrg[0].kill()
         
 
         #Autojumping
@@ -295,7 +295,12 @@ class Player(pygame.sprite.Sprite):
         if self.firedelay > 0:
             self.firedelay -= 1
 
-        
+        #Death
+        if self.health <= 0:
+            self.health = 0
+            self.collision.kill()
+            self.kill()
+            v.DEAD = True
 
     #Player jumping
     def jump(self):
