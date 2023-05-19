@@ -29,6 +29,7 @@ def Startlvl0():
     lvl0.StartMap()
     v.LEVEL = 0
     v.GAMESTATE = 2
+    v.CONTROLS = 1
     pygame.mouse.set_visible(1)
 
 def Startlvl1():
@@ -39,6 +40,7 @@ def Startlvl1():
     lvl1.StartMap()
     v.LEVEL = 1
     v.GAMESTATE = 2
+    v.CONTROLS = 1
     pygame.mouse.set_visible(1)
 
 levellist = [

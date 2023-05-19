@@ -183,22 +183,21 @@ while True:
                 QuitGame()
 
             #Checking for key press
-            if event.type == pygame.KEYDOWN:    
-                if event.key == pygame.K_w:
-                    for player in g.players:
-                        player.jumpprompt = True
+            if event.type == pygame.KEYDOWN:
+                if v.CONTROLS: 
+                    for player in g.players:   
+                        if event.key == pygame.K_w:
+                                player.jumpprompt = True
 
-                if event.key == pygame.K_y:
-                    for nme in g.enemies:
-                        nme.jumpprompt = True
-                    
-                if event.key == pygame.K_s:
-                    for player in g.players:
-                        player.dropping = True
+                        if event.key == pygame.K_s:
+                                player.dropping = True
 
-                if event.key == pygame.K_h:
                     for nme in g.enemies:
-                        nme.dropping = True
+                        if event.key == pygame.K_h:
+                                nme.dropping = True
+
+                        if event.key == pygame.K_y:
+                                nme.jumpprompt = True
                     
                 #debugging
                 if event.key == pygame.K_c:
@@ -213,29 +212,18 @@ while True:
                 if event.key == pygame.K_b:
                     v.BRAIN = not v.BRAIN
 
-                #debugging
-                if event.key == pygame.K_k:
-                    #PLAYER DEATH
-                    for player in g.players:
-                        for f in g.focus:
-                            f.rect.center = player.pos
-                        player.kill()
-                        player.collision.kill()
-                        #pass
-
-                if event.key == pygame.K_e:
-                    for nme in g.enemies:
-                        nme.kill()
-                        nme.collision.kill()
+                if event.key == pygame.K_f:
+                    v.CONTROLS = not v.CONTROLS
+                    if not v.CONTROLS:
+                        v.MOUSECAM = False
+                        for player in g.players:
+                            player.jumpprompt = False
+                            player.dropping = False
                 
                 #debug menu
                 if event.key == pygame.K_i:
                     ToggleDebug()
                     #v.DEBUG = not v.DEBUG
-
-                #Returning to title screen
-                if event.key == pygame.K_m:
-                    ReturnToTitle()
 
                 #Pausing
                 if event.key == pygame.K_ESCAPE:
@@ -253,44 +241,44 @@ while True:
                     if event.key == pygame.K_3:
                         player.weapon = 3
                         player.firedelay = 30
-                        
+
             #Checking for key release
-            if event.type == pygame.KEYUP:      
-                if event.key == pygame.K_w:
+            if event.type == pygame.KEYUP:
+                if v.CONTROLS:
                     for player in g.players:
-                        player.jumpprompt = False
-                        player.cancel_jump()
+                        if event.key == pygame.K_w:
+                                player.jumpprompt = False
+                                player.cancel_jump()
+                        if event.key == pygame.K_s:
+                                player.dropping = False
 
-                if event.key == pygame.K_y:
-                    for nme in g.enemies:
-                        nme.jumpprompt = False
-                        nme.cancel_jump()
-                        
-                if event.key == pygame.K_s:
-                    for player in g.players:
-                        player.dropping = False
+                for nme in g.enemies:
+                    if event.key == pygame.K_y:
+                            nme.jumpprompt = False
+                            nme.cancel_jump()
 
-                if event.key == pygame.K_h:
-                    for nme in g.enemies:
-                        nme.dropping = False
+                    if event.key == pygame.K_h:
+                            nme.dropping = False
 
         if v.PAUSED == False:
-            
-            #Player firing
-            if pygame.mouse.get_pressed(num_buttons=3)[0]:
-                for player in g.players:
-                    player.shoot()
-                        #TESTERPROJ = cls.Projectile((0, 0), 2, (0, 10), player.aim, 300)
-                        #TESTERPROJ = cls.Projectile((0, 0.2), 2, (0, 0), player.aim, 300)
-                        #TESTERPROJ = cls.Projectile((0, 0.1), 2, (0, 0), player.aim, 300)
-                        #^Interesting bug, use for BOSS?
 
-            if pygame.mouse.get_pressed(num_buttons=3)[2]:
-                v.MOUSECAM = True
-                v.CAMERASLACK = v.CAMERAROUGH
-            else:
-                v.MOUSECAM = False
-                v.CAMERASLACK = v.CAMERASMOOTH
+            if v.CONTROLS:
+            
+                #Player firing
+                if pygame.mouse.get_pressed(num_buttons=3)[0]:
+                    for player in g.players:
+                        player.shoot()
+                            #TESTERPROJ = cls.Projectile((0, 0), 2, (0, 10), player.aim, 300)
+                            #TESTERPROJ = cls.Projectile((0, 0.2), 2, (0, 0), player.aim, 300)
+                            #TESTERPROJ = cls.Projectile((0, 0.1), 2, (0, 0), player.aim, 300)
+                            #^Interesting bug, use for BOSS?
+
+                if pygame.mouse.get_pressed(num_buttons=3)[2]:
+                    v.MOUSECAM = True
+                    v.CAMERASLACK = v.CAMERAROUGH
+                else:
+                    v.MOUSECAM = False
+                    v.CAMERASLACK = v.CAMERASMOOTH
                         
             #Sprite updating
             for player in g.players:
@@ -338,7 +326,6 @@ while True:
         #Frame updating
         pygame.display.update()
         FramePerSec.tick(v.FPS)
-        v.TICK += 1
 
     
     

@@ -80,10 +80,11 @@ class Player(pygame.sprite.Sprite):
         if self.stun <= 0:
             self.pressed_keys = pygame.key.get_pressed()
 
-            if self.pressed_keys[K_a]: #OPTIMISE
-                self.acc.x = -v.ACC
-            if self.pressed_keys[K_d]:
-                self.acc.x = v.ACC
+            if v.CONTROLS:
+                if self.pressed_keys[K_a]: #OPTIMISE
+                    self.acc.x = -v.ACC
+                if self.pressed_keys[K_d]:
+                    self.acc.x = v.ACC
 
             self.acc.x += self.vel.x * v.FRIC
         self.vel += self.acc 
@@ -287,6 +288,7 @@ class Player(pygame.sprite.Sprite):
 
         #Autojumping
         if self.jumpprompt == True:
+            #if v.CONTROLS:
             self.jump()
 
         #Firing delay
