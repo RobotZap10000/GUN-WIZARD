@@ -54,8 +54,6 @@ class HUD(pygame.sprite.Sprite):
             #CHANGE BAR LENGTH
             if not v.DEAD:
                 self.surf = pygame.Surface((self.size[0]*(self.target.mana / 100), self.size[1]))
-            else:
-                self.surf = pygame.Surface((0, self.size[1]))
             self.surf.fill(self.color)
             self.rect = self.surf.get_rect(topright = self.originxy)
             #RENDER TEXT
