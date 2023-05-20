@@ -52,5 +52,8 @@ lvl_select_buttons = []
 pause_menu_buttons = []
 death_menu_buttons = []
 
+#HUD groups
+HUD = pygame.sprite.Group()
+
 #Dark screen(?)
 screens = pygame.sprite.Group()

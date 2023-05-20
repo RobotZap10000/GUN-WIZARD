@@ -4,6 +4,7 @@ from pygame.locals import *
 import random, time
 import variables as v
 import groups as g
+import functions as func
 from math import atan2, degrees
 
 #initializing
@@ -21,6 +22,70 @@ def GetAngle(startx, starty, endx, endy): #start, end
 
     #Apply angle
     return degs + 90 #AND SO STARTS THE SPAGHETTI CODE
+
+#HUD element
+class HUD(pygame.sprite.Sprite):
+    def __init__(self, target, size, color, originxy, unit):
+        super().__init__()
+        self.target = target
+        self.size = (size)
+        self.surf = pygame.Surface(self.size)
+        self.color = color
+        self.surf.fill(color)
+        self.originxy = originxy
+        self.rect = self.surf.get_rect(topright = originxy)
+        self.unit = unit
+        g.all_sprites.add(self)
+        g.HUD.add(self)
+
+    def update(self):
+        if self.unit == "player_health":
+            #CHANGE BAR LENGTH
+            if not v.DEAD:
+                self.surf = pygame.Surface((self.size[0]*(self.target.health / 100), self.size[1]))
+            else:
+                self.surf = pygame.Surface((0, self.size[1]))
+            self.surf.fill(self.color)
+            self.rect = self.surf.get_rect(topright = self.originxy)
+            #RENDER TEXT
+            #BLIT TEXT ONTO SURF
+
+        if self.unit == "player_mana":
+            #CHANGE BAR LENGTH
+            if not v.DEAD:
+                self.surf = pygame.Surface((self.size[0]*(self.target.mana / 100), self.size[1]))
+            else:
+                self.surf = pygame.Surface((0, self.size[1]))
+            self.surf.fill(self.color)
+            self.rect = self.surf.get_rect(topright = self.originxy)
+            #RENDER TEXT
+            #BLIT TEXT ONTO SURF
+        
+        if self.unit == "player_weapon":
+            if self.target.weapon == 1:
+                self.color = v.GREEN
+            elif self.target.weapon == 2:
+                self.color = v.RED
+            elif self.target.weapon == 3:
+                self.color = v.YELLOW
+            else:
+                self.color = v.BLACK
+            self.surf.fill(self.color)
+            
+            if self.target.weapon == 4:
+                if self.target.initfiredelay > 0:
+                    self.surf.set_alpha(128)
+                else:
+                    self.surf.set_alpha(255)
+            else:
+                if self.target.firedelay > 0:
+                    self.surf.set_alpha(128)
+                else:
+                    self.surf.set_alpha(255)
+
+            
+
+
 
 #Player
 class Player(pygame.sprite.Sprite):
@@ -56,6 +121,9 @@ class Player(pygame.sprite.Sprite):
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.knockback.add(self)
+        HUDHEALTH = HUD(self, (300, 100), v.RED, (v.WIDTH-50, 50), "player_health")
+        HUDMANA = HUD(self, (300, 100), v.BLUE, (v.WIDTH-50, 200), "player_mana")
+        HUDWEAPON = HUD(self, (200, 100), v.YELLOW, (v.WIDTH-50, 350), "player_weapon")
 
         #Player physics
         self.pos = vec(self.rect.midbottom)
@@ -117,6 +185,9 @@ class Player(pygame.sprite.Sprite):
         self.mana = min(max(self.mana, 0), 100)
 
         self.lastpos = vec(self.pos)
+
+        if self.firedelay > 0:
+            self.firedelay -= 1
 
         #Self damage
 
@@ -291,9 +362,7 @@ class Player(pygame.sprite.Sprite):
             #if v.CONTROLS:
             self.jump()
 
-        #Firing delay
-        if self.firedelay > 0:
-            self.firedelay -= 1
+        
 
         #Death
         if self.health <= 0:
@@ -534,6 +603,9 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 0
             self.collision.kill()
             self.kill()
+            if len(list(g.enemies)) == 0:
+                func.Victory()
+            
 
         if self.proj_immunity > 0:
             self.proj_immunity -= 1
@@ -887,4 +959,3 @@ class Explosion(pygame.sprite.Sprite):
                 if self.lifeleft <= self.life / 3:
                     self.kb = (0, 0, True)
                     self.dmg = 0
-        

@@ -23,6 +23,8 @@ def StartMap():
 
     #Enemies WOOO
     NME1 = cls.Enemy((1220, 500))
+    NME2 = cls.Enemy((620, 500))
+    NME3 = cls.Enemy((120, 500))
 
     #Player and collision shadow
     P1 = cls.Player()
@@ -43,9 +45,9 @@ def StartMap():
     SCROLL_LEFT = cls.MapObject((30, 30), v.CYAN, (-v.WIDTH+700, v.HEIGHT/2), (g.debug, g.world_objects, g.left_scroll_limits))
     SCROLL_RIGHT = cls.MapObject((30, 30), v.CYAN, (v.WIDTH*2-700, v.HEIGHT/2), (g.debug, g.world_objects, g.right_scroll_limits))
 
-    TRG1 = cls.MapObject((20, 20), v.ORANGE, (500, 500), (g.world_objects, g.debug, g.triggers))
-    TRG1.function = func.Victory
-    TRG1.surf.set_alpha(128)
+    #TRG1 = cls.MapObject((20, 20), v.ORANGE, (500, 500), (g.world_objects, g.debug, g.triggers))
+    #TRG1.function = func.Victory
+    #TRG1.surf.set_alpha(128)
 
     if v.DEBUG:
         for debug in g.debug:
