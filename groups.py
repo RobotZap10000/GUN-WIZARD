@@ -9,6 +9,9 @@ from pygame.locals import *
 #Drawing group
 all_sprites = pygame.sprite.Group() 
 
+#Drawing check
+draw_checks = pygame.sprite.Group()
+
 #Collision groups
 platforms = pygame.sprite.Group()
 players = pygame.sprite.Group()

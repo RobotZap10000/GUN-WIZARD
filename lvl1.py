@@ -50,3 +50,5 @@ def StartMap():
     if v.DEBUG:
         for debug in g.debug:
             g.all_sprites.add(debug)
+
+    DRAWCHECK = cls.MapObject((v.WIDTH, v.HEIGHT), v.BLACK, (v.WIDTH/2, v.HEIGHT/2) , (g.draw_checks, g.draw_checks))

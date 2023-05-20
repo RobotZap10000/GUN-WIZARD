@@ -224,7 +224,9 @@ while True:
         displaysurface.fill(v.BGGRAY)
 
         for entity in g.all_sprites:
-            displaysurface.blit(entity.surf, entity.rect)
+            draw_check = pygame.sprite.spritecollide(entity, g.draw_checks, False)
+            if draw_check:
+                displaysurface.blit(entity.surf, entity.rect)
 
         #Pause menu buttons
         menu.DrawPauseMenu()

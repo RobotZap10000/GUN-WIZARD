@@ -712,6 +712,8 @@ class MapObject(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center = originxy)
         if g.debug not in groups:
             g.all_sprites.add(self)
+        if g.draw_checks in groups:
+            g.all_sprites.remove(self)
         for name in groups:
             name.add(self)
             
