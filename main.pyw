@@ -233,7 +233,13 @@ while True:
                     displaysurface.blit(entity.surf, entity.rect)
 
         for hud in g.HUD:
+            if hud.background != None:
+                displaysurface.blit(hud.background, hud.background_rect)
             displaysurface.blit(hud.surf, hud.rect)
+            if hud.symbol != None:
+                displaysurface.blit(hud.symbol.text, hud.symbol.rect)
+            if hud.text != None:
+                displaysurface.blit(hud.text.text, hud.text.rect)
 
         #Pause menu buttons
         menu.DrawPauseMenu()

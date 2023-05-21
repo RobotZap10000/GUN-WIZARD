@@ -14,6 +14,7 @@ displaysurface = pygame.display.set_mode((v.WIDTH, v.HEIGHT))
 
 #Text fonts 
 font_debug = pygame.font.SysFont("Verdana", 20)
+font_icon = pygame.font.Font("FreeSerif.ttf", 50)
 font_version = pygame.font.SysFont("Verdana", 20)
 font_title = pygame.font.Font("upheavtt.ttf", 250)
 font_subtitle = pygame.font.Font("upheavtt.ttf", 60)
@@ -22,13 +23,14 @@ font_lvlselectbig = pygame.font.Font("upheavtt.ttf", 90)
 
 #Class for text
 class Text():
-    def __init__(self, font, string, color, rect, textlist, rectlist):
+    def __init__(self, font, string, color, rect, textlist=None, rectlist=None):
         #super().__init__()
         self.color = color
         self.text = font.render(string, True, self.color)
         self.rect = self.text.get_rect(center = rect)
-        textlist.append(self.text)
-        rectlist.append(self.rect)
+        if textlist != None:
+            textlist.append(self.text)
+            rectlist.append(self.rect)
 
 
 #Title screen text ONLY DEFINED ONCE
