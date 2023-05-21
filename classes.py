@@ -142,9 +142,9 @@ class Player(pygame.sprite.Sprite):
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.knockback.add(self)
-        HUDHEALTH = HUD(self, (300, 100), v.RED, (50, v.HEIGHT - 150), "player_health")
-        HUDMANA = HUD(self, (300, 100), v.BLUE, (50, v.HEIGHT-300), "player_mana")
-        HUDWEAPON = HUD(self, (200, 100), v.YELLOW, (50, v.HEIGHT-450), "player_weapon")
+        HUDHEALTH = HUD(self, (300, 80), v.RED, (50, v.HEIGHT - 130), "player_health")
+        HUDMANA = HUD(self, (300, 80), v.BLUE, (50, v.HEIGHT-260), "player_mana")
+        HUDWEAPON = HUD(self, (200, 100), v.YELLOW, (50, v.HEIGHT-410), "player_weapon")
 
         #Player physics
         self.pos = vec(self.rect.midbottom)
