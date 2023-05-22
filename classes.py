@@ -110,13 +110,14 @@ class HUD(pygame.sprite.Sprite):
 
 #Player
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
+    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), speed=v.ACC, color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
         super().__init__()
         self.size = size
         self.surf = pygame.Surface(self.size)
         self.surf.fill(color)
         self.alpha = 255
         self.rect = self.surf.get_rect(midbottom = (v.WIDTH/2,v.HEIGHT-150))
+        self.speed = speed
         self.jumpvel = jumpvel
         self.gravity = gravity
         self.jumping = False
@@ -171,9 +172,9 @@ class Player(pygame.sprite.Sprite):
 
             if v.CONTROLS:
                 if self.pressed_keys[K_a]: #OPTIMISE
-                    self.acc.x = -v.ACC
+                    self.acc.x = -self.speed
                 if self.pressed_keys[K_d]:
-                    self.acc.x = v.ACC
+                    self.acc.x = self.speed
 
             self.acc.x += self.vel.x * v.FRIC
         self.vel += self.acc 
@@ -478,14 +479,16 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, health=60, ai=0):
+    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000):
         super().__init__()
-        self.size = (70, 120)
+        self.size = size
+        self.color = color
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.MAGENTA)
+        self.surf.fill(self.color)
         self.rect = self.surf.get_rect(midbottom = originxy)
-        self.jumpvel = v.JUMPVEL
-        self.gravity = v.GRAVITY
+        self.speed = speed
+        self.jumpvel = jumpvel
+        self.gravity = gravity
         self.kb = (10, 20, True)
         self.iframes = 1
         self.proj_immunity = 0
@@ -495,8 +498,8 @@ class Enemy(pygame.sprite.Sprite):
         self.cycle_len = 240
         self.cycle = self.cycle_len
         self.aggrostate = False
-        self.aggro = 1000
-        self.deaggro = 1500
+        self.aggro = aggro
+        self.deaggro = deaggro
         self.aggrolen = 30
         self.aggroleft = self.aggrolen
         self.health = health
@@ -537,9 +540,9 @@ class Enemy(pygame.sprite.Sprite):
                         if self.cycle > 90:
                             for player in g.players:
                                 if self.pos.x > player.pos.x: #OPTIMISE
-                                    self.acc.x = -v.ACC*0.8
+                                    self.acc.x = -self.speed
                                 else:
-                                    self.acc.x = v.ACC*0.8
+                                    self.acc.x = self.speed
 
                                 if self.pos.y > player.pos.y:
                                     #CHECK IF ENEMY CAN REACH PLAYER WITH JUMP, THEN:
@@ -550,9 +553,9 @@ class Enemy(pygame.sprite.Sprite):
                                     self.dropping = True
 
             if self.pressed_keys[K_g]: #OPTIMISE
-                self.acc.x = -v.ACC
+                self.acc.x = -self.speed
             if self.pressed_keys[K_j]:
-                self.acc.x = v.ACC
+                self.acc.x = self.speed
 
             self.acc.x += self.vel.x * v.FRIC
             
