@@ -4,12 +4,17 @@ from pygame.locals import *
 import random, time
 import variables as v
 import groups as g
+import functions as func
+import texts as txt
 from math import atan2, degrees
 
 #initializing
 pygame.init()
 vec = pygame.math.Vector2 #2 = 2D
 vec3 = pygame.math.Vector3
+
+#game window
+displaysurface = pygame.display.set_mode((v.WIDTH, v.HEIGHT))
         
 #Get angle
 def GetAngle(startx, starty, endx, endy): #start, end
@@ -22,15 +27,97 @@ def GetAngle(startx, starty, endx, endy): #start, end
     #Apply angle
     return degs + 90 #AND SO STARTS THE SPAGHETTI CODE
 
+#HUD element
+class HUD(pygame.sprite.Sprite):
+    def __init__(self, target, size, color, originxy, unit):
+        super().__init__()
+        self.target = target
+        self.size = vec(size)
+        self.surf = pygame.Surface(self.size)
+        self.color = color
+        self.surf.fill(color)
+        self.originxy = originxy
+        self.rect = self.surf.get_rect(topleft = originxy)
+        self.unit = unit
+        self.text = None
+        self.symbol = None
+        self.background = None
+        g.all_sprites.add(self)
+        g.HUD.add(self)
+
+    def build_background(self, margin):
+        self.bg_margin = margin
+        self.bg_width = round(self.size[0] + self.bg_margin)
+        self.bg_height = round(self.size[1] + self.bg_margin)
+        self.background = pygame.Surface((self.bg_width, self.bg_height))
+        self.background.fill((20, 20, 20))
+        self.background_rect = self.background.get_rect(topleft = (self.originxy[0] - self.bg_margin /2, self.originxy[1] - self.bg_margin/2))
+
+    def update(self):
+        if self.unit == "player_health":
+            #CHANGE BAR LENGTH
+            if not v.DEAD:
+                self.surf = pygame.Surface((self.size[0]*(self.target.health / 100), self.size[1]))
+            else:
+                self.surf = pygame.Surface((0, self.size[1]))
+            self.surf.fill(self.color)
+            self.rect = self.surf.get_rect(topleft = self.originxy)
+            self.symbol = txt.Text(txt.font_icon, "✚ ", v.WHITE, (0, 0))
+            self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
+            self.text = txt.Text(txt.font_lvlselect, str(self.target.health), v.WHITE, (0, 0))
+            self.text.rect.midleft = self.symbol.rect.midright
+           # self.build_background(20)
+
+        if self.unit == "player_mana":
+            #CHANGE BAR LENGTH
+            if not v.DEAD:
+                self.surf = pygame.Surface((self.size[0]*(self.target.mana / 100), self.size[1]))
+            self.surf.fill(self.color)
+            self.rect = self.surf.get_rect(topleft = self.originxy)
+            self.symbol = txt.Text(txt.font_icon, "★ ", v.WHITE, (0, 0))
+            self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
+            self.text = txt.Text(txt.font_lvlselect, str(round(self.target.mana)), v.WHITE, (0, 0))
+            self.text.rect.midleft = self.symbol.rect.midright
+            #self.build_background(20)
+            #RENDER TEXT
+            #BLIT TEXT ONTO SURF
+        
+        if self.unit == "player_weapon":
+            if self.target.weapon == 1:
+                self.color = v.GREEN
+                self.text = txt.Text(txt.font_lvlselect, "MAGIC", v.BLACK, self.rect.center)
+            elif self.target.weapon == 2:
+                self.color = v.RED
+                self.text = txt.Text(txt.font_lvlselect, "FLAME", v.BLACK, self.rect.center)
+            elif self.target.weapon == 3:
+                self.color = v.YELLOW
+                self.text = txt.Text(txt.font_lvlselect, "BOMB", v.BLACK, self.rect.center)
+            else:
+                self.color = v.MAGENTA
+                self.text = txt.Text(txt.font_lvlselect, "???", v.BLACK, self.rect.center)
+            self.surf.fill(self.color)
+            
+            if self.target.firedelay > 0:
+                self.surf.set_alpha(128)
+            else:
+                self.surf.set_alpha(255)
+        
+        self.build_background(20)
+
+            
+
+
+
 #Player
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
+    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), speed=v.ACC, color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
         super().__init__()
         self.size = size
         self.surf = pygame.Surface(self.size)
         self.surf.fill(color)
         self.alpha = 255
         self.rect = self.surf.get_rect(midbottom = (v.WIDTH/2,v.HEIGHT-150))
+        self.speed = speed
         self.jumpvel = jumpvel
         self.gravity = gravity
         self.jumping = False
@@ -56,6 +143,9 @@ class Player(pygame.sprite.Sprite):
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.knockback.add(self)
+        HUDHEALTH = HUD(self, (300, 80), v.RED, (50, v.HEIGHT - 130), "player_health")
+        HUDMANA = HUD(self, (300, 80), v.BLUE, (50, v.HEIGHT-260), "player_mana")
+        HUDWEAPON = HUD(self, (200, 100), v.YELLOW, (50, v.HEIGHT-410), "player_weapon")
 
         #Player physics
         self.pos = vec(self.rect.midbottom)
@@ -82,9 +172,9 @@ class Player(pygame.sprite.Sprite):
 
             if v.CONTROLS:
                 if self.pressed_keys[K_a]: #OPTIMISE
-                    self.acc.x = -v.ACC
+                    self.acc.x = -self.speed
                 if self.pressed_keys[K_d]:
-                    self.acc.x = v.ACC
+                    self.acc.x = self.speed
 
             self.acc.x += self.vel.x * v.FRIC
         self.vel += self.acc 
@@ -117,6 +207,9 @@ class Player(pygame.sprite.Sprite):
         self.mana = min(max(self.mana, 0), 100)
 
         self.lastpos = vec(self.pos)
+
+        if self.firedelay > 0:
+            self.firedelay -= 1
 
         #Self damage
 
@@ -291,9 +384,7 @@ class Player(pygame.sprite.Sprite):
             #if v.CONTROLS:
             self.jump()
 
-        #Firing delay
-        if self.firedelay > 0:
-            self.firedelay -= 1
+        
 
         #Death
         if self.health <= 0:
@@ -339,7 +430,7 @@ class Player(pygame.sprite.Sprite):
 
             if self.weapon == 2:
                 if self.mana >= 0.6:
-                    PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0.6, dmg=6, flame=True)
+                    PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=3, dmg=6, flame=True)
                     self.lastfired = 0
 
             if self.weapon == 3:
@@ -388,14 +479,16 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, health=60, ai=0):
+    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000):
         super().__init__()
-        self.size = (70, 120)
+        self.size = size
+        self.color = color
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.MAGENTA)
+        self.surf.fill(self.color)
         self.rect = self.surf.get_rect(midbottom = originxy)
-        self.jumpvel = v.JUMPVEL
-        self.gravity = v.GRAVITY
+        self.speed = speed
+        self.jumpvel = jumpvel
+        self.gravity = gravity
         self.kb = (10, 20, True)
         self.iframes = 1
         self.proj_immunity = 0
@@ -405,8 +498,8 @@ class Enemy(pygame.sprite.Sprite):
         self.cycle_len = 240
         self.cycle = self.cycle_len
         self.aggrostate = False
-        self.aggro = 1000
-        self.deaggro = 1500
+        self.aggro = aggro
+        self.deaggro = deaggro
         self.aggrolen = 30
         self.aggroleft = self.aggrolen
         self.health = health
@@ -447,9 +540,9 @@ class Enemy(pygame.sprite.Sprite):
                         if self.cycle > 90:
                             for player in g.players:
                                 if self.pos.x > player.pos.x: #OPTIMISE
-                                    self.acc.x = -v.ACC*0.8
+                                    self.acc.x = -self.speed
                                 else:
-                                    self.acc.x = v.ACC*0.8
+                                    self.acc.x = self.speed
 
                                 if self.pos.y > player.pos.y:
                                     #CHECK IF ENEMY CAN REACH PLAYER WITH JUMP, THEN:
@@ -460,9 +553,9 @@ class Enemy(pygame.sprite.Sprite):
                                     self.dropping = True
 
             if self.pressed_keys[K_g]: #OPTIMISE
-                self.acc.x = -v.ACC
+                self.acc.x = -self.speed
             if self.pressed_keys[K_j]:
-                self.acc.x = v.ACC
+                self.acc.x = self.speed
 
             self.acc.x += self.vel.x * v.FRIC
             
@@ -534,6 +627,9 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 0
             self.collision.kill()
             self.kill()
+            if len(list(g.enemies)) == 0:
+                func.Victory()
+            
 
         if self.proj_immunity > 0:
             self.proj_immunity -= 1
@@ -712,6 +808,8 @@ class MapObject(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center = originxy)
         if g.debug not in groups:
             g.all_sprites.add(self)
+        if g.draw_checks in groups:
+            g.all_sprites.remove(self)
         for name in groups:
             name.add(self)
             
@@ -885,4 +983,3 @@ class Explosion(pygame.sprite.Sprite):
                 if self.lifeleft <= self.life / 3:
                     self.kb = (0, 0, True)
                     self.dmg = 0
-        

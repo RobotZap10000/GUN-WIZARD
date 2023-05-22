@@ -9,6 +9,9 @@ from pygame.locals import *
 #Drawing group
 all_sprites = pygame.sprite.Group() 
 
+#Drawing check
+draw_checks = pygame.sprite.Group()
+
 #Collision groups
 platforms = pygame.sprite.Group()
 players = pygame.sprite.Group()
@@ -48,6 +51,9 @@ bottom_scroll_limits = pygame.sprite.Group()
 lvl_select_buttons = []
 pause_menu_buttons = []
 death_menu_buttons = []
+
+#HUD groups
+HUD = pygame.sprite.Group()
 
 #Dark screen(?)
 screens = pygame.sprite.Group()

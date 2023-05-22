@@ -148,7 +148,7 @@ while True:
 
                     if event.key == pygame.K_2:
                         player.weapon = 2
-                        player.firedelay = 0
+                        player.firedelay = 5
                         
                     if event.key == pygame.K_3:
                         player.weapon = 3
@@ -212,6 +212,9 @@ while True:
 
             for entity in g.debug:
                 entity.move()
+
+            for hud in g.HUD:
+                hud.update()
             
             #ScrollScreen()
             func.ScrollScreen()
@@ -224,7 +227,19 @@ while True:
         displaysurface.fill(v.BGGRAY)
 
         for entity in g.all_sprites:
-            displaysurface.blit(entity.surf, entity.rect)
+            if entity not in g.HUD:
+                draw_check = pygame.sprite.spritecollide(entity, g.draw_checks, False)
+                if draw_check:
+                    displaysurface.blit(entity.surf, entity.rect)
+
+        for hud in g.HUD:
+            if hud.background != None:
+                displaysurface.blit(hud.background, hud.background_rect)
+            displaysurface.blit(hud.surf, hud.rect)
+            if hud.symbol != None:
+                displaysurface.blit(hud.symbol.text, hud.symbol.rect)
+            if hud.text != None:
+                displaysurface.blit(hud.text.text, hud.text.rect)
 
         #Pause menu buttons
         menu.DrawPauseMenu()

@@ -20,9 +20,15 @@ def StartMap():
     #ADD IN DRAW ORDER FROM BACKGROUND TO FOREGROUND
     #Bottom floor
     PT1 = cls.MapObject((v.WIDTH*3, 150), v.RED, (v.WIDTH/2, v.HEIGHT-75), (g.floors, g.world_objects, g.proj_collidables))
+    #Bounding walls
+    WL1 = cls.MapObject((500, 1700), v.RED, (-v.WIDTH, 250), (g.walls, g.world_objects, g.proj_collidables))
+    WL2 = cls.MapObject((500, 1700), v.RED, (v.WIDTH*2, 250), (g.walls, g.world_objects, g.proj_collidables))
+    CL1 = cls.MapObject((v.WIDTH*3, 400), v.RED, (v.WIDTH/2, -600), (g.floors, g.world_objects, g.proj_collidables))
 
     #Enemies WOOO
     NME1 = cls.Enemy((1220, 500))
+    NME2 = cls.Enemy((620, 500))
+    NME3 = cls.Enemy((120, 500))
 
     #Player and collision shadow
     P1 = cls.Player()
@@ -43,10 +49,12 @@ def StartMap():
     SCROLL_LEFT = cls.MapObject((30, 30), v.CYAN, (-v.WIDTH+700, v.HEIGHT/2), (g.debug, g.world_objects, g.left_scroll_limits))
     SCROLL_RIGHT = cls.MapObject((30, 30), v.CYAN, (v.WIDTH*2-700, v.HEIGHT/2), (g.debug, g.world_objects, g.right_scroll_limits))
 
-    TRG1 = cls.MapObject((20, 20), v.ORANGE, (500, 500), (g.world_objects, g.debug, g.triggers))
-    TRG1.function = func.Victory
-    TRG1.surf.set_alpha(128)
+    #TRG1 = cls.MapObject((20, 20), v.ORANGE, (500, 500), (g.world_objects, g.debug, g.triggers))
+    #TRG1.function = func.Victory
+    #TRG1.surf.set_alpha(128)
 
     if v.DEBUG:
         for debug in g.debug:
             g.all_sprites.add(debug)
+
+    DRAWCHECK = cls.MapObject((v.WIDTH, v.HEIGHT), v.BLACK, (v.WIDTH/2, v.HEIGHT/2) , (g.draw_checks, g.draw_checks))
