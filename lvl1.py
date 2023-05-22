@@ -20,6 +20,10 @@ def StartMap():
     #ADD IN DRAW ORDER FROM BACKGROUND TO FOREGROUND
     #Bottom floor
     PT1 = cls.MapObject((v.WIDTH*3, 150), v.RED, (v.WIDTH/2, v.HEIGHT-75), (g.floors, g.world_objects, g.proj_collidables))
+    #Bounding walls
+    WL1 = cls.MapObject((500, 1700), v.RED, (-v.WIDTH, 250), (g.walls, g.world_objects, g.proj_collidables))
+    WL2 = cls.MapObject((500, 1700), v.RED, (v.WIDTH*2, 250), (g.walls, g.world_objects, g.proj_collidables))
+    CL1 = cls.MapObject((v.WIDTH*3, 400), v.RED, (v.WIDTH/2, -600), (g.floors, g.world_objects, g.proj_collidables))
 
     #Enemies WOOO
     NME1 = cls.Enemy((1220, 500))
