@@ -74,6 +74,9 @@ def ScrollScreen():
                 for nme in g.enemies:
                     nme.pos.x += round(offsetx * v.CAMERASLACK)
                     nme.pos.y += round(offsety * v.CAMERASLACK)
+                for text in g.map_texts:
+                    text.rect.x += round(offsetx * v.CAMERASLACK)
+                    text.rect.y += round(offsety * v.CAMERASLACK)
 
 #Tutorial button
 def Startlvl0():

@@ -823,6 +823,32 @@ class MapObject(pygame.sprite.Sprite):
     #def ChangeTarget(self, newtarget):
     #    self.target = newtarget
 
+#Scrollable map text
+class MapText(pygame.sprite.Sprite):
+    def __init__(self, size=(200, 200), color=v.RED, text=txt.text0, originxy=(1000, 200)):
+        super().__init__()
+        self.size = size
+        self.surf = pygame.Surface(self.size)
+        self.color = color
+        self.surf.fill(self.color)
+        self.text = text
+        self.rendertext = self.text.text
+        self.textwidth = self.rendertext.get_width()
+        self.textheight = self.rendertext.get_height()
+        self.rect = self.surf.get_rect(center = originxy)
+        self.surf.blit(self.rendertext, (self.size[0]/2 - self.textwidth/2, self.size[1]/2 - self.textheight/2))
+        g.all_sprites.add(self)
+        g.map_texts.append(self)
+
+        
+    def move(self):
+        pass
+
+    def update(self):
+        pass
+        
+        
+
 #Projectile class?
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, size, color, acc, gravity, rot, vel, maxvel, inherit, life, shooter, firerate, kb, cost=20 ,dmg=1, flame=False, explosive=False, noclip=False):

@@ -13,7 +13,7 @@ pygame.init()
 vec = pygame.math.Vector2 #2 = 2D
 
 
-
+TXT1 = txt.Text(txt.font_subtitle, "BRUH", v.GREEN, (0, 0))
 
 #Starting map
 def StartMap():
@@ -42,6 +42,10 @@ def StartMap():
     WALL4 = cls.MapObject((24, 152), v.BLUE, (1308, 688), (g.walls, g.world_objects, g.proj_collidables))
     WALL5 = cls.MapObject((24, 152), v.BLUE, (1132, 688), (g.walls, g.world_objects, g.proj_collidables))
     FLR3 = cls.MapObject((200, 24), v.RED, (1220, 600), (g.platforms, g.world_objects, g.proj_collidables))
+
+
+    #TEXT???? 
+    TUT_TXT1 = cls.MapText(size=(500, 200), color=v.BLUE, text=TXT1)
 
     #Enemies WOOO
     NME1 = cls.Enemy((1220, 500))
