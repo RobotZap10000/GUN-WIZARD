@@ -74,6 +74,9 @@ def ScrollScreen():
                 for nme in g.enemies:
                     nme.pos.x += round(offsetx * v.CAMERASLACK)
                     nme.pos.y += round(offsety * v.CAMERASLACK)
+                for text in g.map_texts:
+                    text.rect.x += round(offsetx * v.CAMERASLACK)
+                    text.rect.y += round(offsety * v.CAMERASLACK)
 
 #Tutorial button
 def Startlvl0():
@@ -144,16 +147,16 @@ def LimitScroll():
     for f in g.focus:
         MousePos = vec(pygame.mouse.get_pos())
         if v.MOUSECAM == True:
-            f.mousefocusx = (f.target.rect.centerx - MousePos.x) / v.MOUSECAMLIMIT#SOME VALUE
-            f.mousefocusy = (f.target.rect.centery - MousePos.y) / v.MOUSECAMLIMIT
+            f.mousefocusx = (f.target.rect.centerx - MousePos.x) / v.MOUSECAMLIMITX#SOME VALUE
+            f.mousefocusy = (f.target.rect.centery - MousePos.y) / v.MOUSECAMLIMITY
         else:
             f.mousefocusx = 0
             f.mousefocusy = 0
          
         for left in g.left_scroll_limits:
             for right in g.right_scroll_limits:
-                f.rect.centerx = max(left.rect.centerx + 150, min(f.target.rect.centerx - f.mousefocusx, right.rect.centerx - 150))
+                f.rect.centerx = max(left.rect.centerx, min(f.target.rect.centerx - f.mousefocusx, right.rect.centerx))
         for top in g.top_scroll_limits:
             for bottom in g.bottom_scroll_limits:
-                f.rect.centery = max(top.rect.centery + 300, min(f.target.rect.centery - f.mousefocusy, bottom.rect.centery - 300))
+                f.rect.centery = max(top.rect.centery, min(f.target.rect.centery - f.mousefocusy, bottom.rect.centery))
 

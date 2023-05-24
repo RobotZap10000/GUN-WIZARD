@@ -110,13 +110,13 @@ class HUD(pygame.sprite.Sprite):
 
 #Player
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), speed=v.ACC, color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
+    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), spawn=(v.WIDTH/2,v.HEIGHT-150), speed=v.ACC, color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100):
         super().__init__()
         self.size = size
         self.surf = pygame.Surface(self.size)
         self.surf.fill(color)
         self.alpha = 255
-        self.rect = self.surf.get_rect(midbottom = (v.WIDTH/2,v.HEIGHT-150))
+        self.rect = self.surf.get_rect(midbottom = spawn)
         self.speed = speed
         self.jumpvel = jumpvel
         self.gravity = gravity
@@ -318,12 +318,13 @@ class Player(pygame.sprite.Sprite):
 
         if self.hitsfloor:
             if self.vel.y > 0:
-                self.pos.y = self.hitsfloor[0].rect.top + 1#Using hits[0] checks the first collision in the list that’s returned.
-                self.vel.y = 0
-                self.kb_vel.y = 0
-                self.jumping = False
-                self.standing = True
-                self.collision.move()
+                if self.pos.y < self.hitsfloor[0].rect.bottom:
+                    self.pos.y = self.hitsfloor[0].rect.top + 1#Using hits[0] checks the first collision in the list that’s returned.
+                    self.vel.y = 0
+                    self.kb_vel.y = 0
+                    self.jumping = False
+                    self.standing = True
+                    self.collision.move()
 
         
 
@@ -383,6 +384,7 @@ class Player(pygame.sprite.Sprite):
         if self.jumpprompt == True:
             #if v.CONTROLS:
             self.jump()
+            # self.jumpprompt = False
 
         
 
@@ -479,7 +481,7 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000):
+    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20):
         super().__init__()
         self.size = size
         self.color = color
@@ -503,7 +505,7 @@ class Enemy(pygame.sprite.Sprite):
         self.aggrolen = 30
         self.aggroleft = self.aggrolen
         self.health = health
-        self.melee_dmg = 20
+        self.melee_dmg = dmg_mel
         self.ai = ai
         g.all_sprites.add(self)
         g.world_objects.add(self)
@@ -822,6 +824,35 @@ class MapObject(pygame.sprite.Sprite):
 
     #def ChangeTarget(self, newtarget):
     #    self.target = newtarget
+
+#Scrollable map text
+class MapText(pygame.sprite.Sprite):
+    def __init__(self, size="inherit_from_text", color=v.RED, text=txt.text0, originxy=(1000, 200)):
+        super().__init__()
+        self.text = text
+        if size != "inherit_from_text":
+            self.size = size
+        else:
+            self.size = (self.text.width, self.text.height)
+        self.surf = pygame.Surface(self.size)
+        self.color = color
+        self.surf.fill(self.color)
+        self.rendertext = self.text.text
+        self.textwidth = self.rendertext.get_width()
+        self.textheight = self.rendertext.get_height()
+        self.rect = self.surf.get_rect(center = originxy)
+        self.surf.blit(self.rendertext, (self.size[0]/2 - self.textwidth/2, self.size[1]/2 - self.textheight/2))
+        g.all_sprites.add(self)
+        g.map_texts.append(self)
+
+        
+    def move(self):
+        pass
+
+    def update(self):
+        pass
+        
+        
 
 #Projectile class?
 class Projectile(pygame.sprite.Sprite):

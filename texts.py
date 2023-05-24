@@ -27,6 +27,7 @@ class Text():
         #super().__init__()
         self.color = color
         self.text = font.render(string, True, self.color)
+        self.width, self.height = font.size(string)
         self.rect = self.text.get_rect(center = rect)
         if textlist != None:
             textlist.append(self.text)

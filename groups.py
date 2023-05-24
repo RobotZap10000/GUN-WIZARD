@@ -57,3 +57,6 @@ HUD = pygame.sprite.Group()
 
 #Dark screen(?)
 screens = pygame.sprite.Group()
+
+#Map texts
+map_texts = []
