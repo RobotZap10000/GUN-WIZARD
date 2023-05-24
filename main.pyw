@@ -143,16 +143,19 @@ while True:
 
                 for player in g.players:
                     if event.key == pygame.K_1:
-                        player.weapon = 1
-                        player.firedelay = 10
+                        if player.weapon != 1:
+                            player.weapon = 1
+                            player.firedelay = 10
 
                     if event.key == pygame.K_2:
-                        player.weapon = 2
-                        player.firedelay = 5
+                        if player.weapon != 2:
+                            player.weapon = 2
+                            player.firedelay = 5
                         
                     if event.key == pygame.K_3:
-                        player.weapon = 3
-                        player.firedelay = 30
+                        if player.weapon != 3:
+                            player.weapon = 3
+                            player.firedelay = 30
 
             #Checking for key release
             if event.type == pygame.KEYUP:
