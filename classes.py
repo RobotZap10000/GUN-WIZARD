@@ -238,22 +238,29 @@ class Player(pygame.sprite.Sprite):
         if self.immunity == 0:
             self.hitsenemy = pygame.sprite.spritecollide(self.collision, g.enemies, False)
             if self.hitsenemy:
-                #RESET KB VEC ROT
-                self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
-                self.kb_angle = GetAngle(self.hitsenemy[0].pos.x, self.hitsenemy[0].pos.y - self.hitsenemy[0].size[1]/2, self.pos.x, self.pos.y - self.size[1]/2)
-                self.kb_rot = self.kb_angle
-                self.kb_vel = vec(0, self.hitsenemy[0].kb[0])
-                self.kb_vel = self.kb_vel.rotate(self.kb_rot)
-                self.vel = vec(0, 0)
-                if self.hitsenemy[0].kb[2]:
-                    if self.hitsenemy[0].stun <= 0:
-                        self.vel += self.hitsenemy[0].vel
-                self.vel += self.kb_vel
-                self.health -= self.hitsenemy[0].melee_dmg
-                
-                self.immunity = self.iframes
-                self.stun = self.hitsenemy[0].kb[1]
-                self.collision.move()
+                if self.hitsenemy[0].kb[0] > 0:
+                    #RESET KB VEC ROT
+                    self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
+                    self.kb_angle = GetAngle(self.hitsenemy[0].pos.x, self.hitsenemy[0].pos.y - self.hitsenemy[0].size[1]/2, self.pos.x, self.pos.y - self.size[1]/2)
+                    self.kb_rot = self.kb_angle
+                    self.kb_vel = vec(0, self.hitsenemy[0].kb[0])
+                    self.kb_vel = self.kb_vel.rotate(self.kb_rot)
+                    self.vel = vec(0, 0)
+                    if self.hitsenemy[0].kb[2]:
+                        if self.hitsenemy[0].stun <= 0:
+                            self.vel += self.hitsenemy[0].vel
+                    self.vel += self.kb_vel
+                    self.stun = self.hitsenemy[0].kb[1]
+                    self.collision.move()
+
+                if self.hitsenemy[0].melee_dmg >= 0:
+                    self.health -= self.hitsenemy[0].melee_dmg
+                    self.immunity = self.iframes
+
+                else:
+                    self.health -= self.hitsenemy[0].melee_dmg
+                    self.health = min(self.health, 100)
+                    self.hitsenemy[0].kill()
 
         #Enemy projectiles
         if self.immunity == 0:
@@ -438,6 +445,7 @@ class Player(pygame.sprite.Sprite):
             if self.weapon == 3:
                 if self.mana >= 40:
                     PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 40, (5, 0), cost=40, dmg=10, explosive=(50, 150, 30, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
+                    
                     self.lastfired = 0
 
         
@@ -481,7 +489,7 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20):
+    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20, kb=(10, 20, True), team="enemy", flag="count_death"):
         super().__init__()
         self.size = size
         self.color = color
@@ -491,12 +499,12 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
         self.jumpvel = jumpvel
         self.gravity = gravity
-        self.kb = (10, 20, True)
+        self.kb = kb
         self.iframes = 1
         self.proj_immunity = 0
         self.exp_immunity = 0
         self.stun = 0
-        self.team = "enemy"
+        self.team = team
         self.cycle_len = 240
         self.cycle = self.cycle_len
         self.aggrostate = False
@@ -507,6 +515,7 @@ class Enemy(pygame.sprite.Sprite):
         self.health = health
         self.melee_dmg = dmg_mel
         self.ai = ai
+        self.flag = flag
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.enemies.add(self)
@@ -627,9 +636,24 @@ class Enemy(pygame.sprite.Sprite):
 
         if self.health <= 0:
             self.health = 0
+            for player in g.players:
+                healthdrop = False
+                if player.health < 100:
+                    rng = random.randint(0, 2)
+                    if rng == 0: 
+                        healthdrop = True
+                if player.health < 40:
+                    healthdrop = True
+                
+                if healthdrop:
+                    HEALTHPACK = Enemy(self.pos, size=(50, 50), color=v.HEALTHGREEN, health=999, ai=2, dmg_mel=-30, kb=(0, 0, False), flag="dont_count")
             self.collision.kill()
             self.kill()
-            if len(list(g.enemies)) == 0:
+            self.deathcounting = 0
+            for entity in g.enemies:
+                if entity.flag == "count_death":
+                    self.deathcounting += 1
+            if self.deathcounting == 0:
                 func.Victory()
             
 
