@@ -68,17 +68,29 @@ def StartMap():
     PT2 = cls.MapObject((4100, 150), v.RED, (2000, 4500), (g.floors, g.world_objects, g.proj_collidables))
 
     #Top floor
-    PT1 = cls.MapObject((3500, 150), v.RED, (1750, v.HEIGHT-75), (g.floors, g.world_objects, g.proj_collidables))
-    WALL3 = cls.MapObject((200, 500), v.RED, (3400, 680), (g.walls, g.world_objects, g.proj_collidables))
-    PT3 = cls.MapObject((200, 20), v.CYAN, (3400, 420), (g.floors, g.world_objects, g.proj_collidables))
+    PT1 = cls.MapObject((3480, 150), v.RED, (1750, v.HEIGHT-75), (g.floors, g.world_objects, g.proj_collidables))
+    CLN2 = cls.MapObject((3500, 150), v.CYAN, (1750, v.HEIGHT+75), (g.ceilings, g.world_objects, g.proj_collidables))
+    WALL3 = cls.MapObject((200, 770), v.GREEN, (3400, 815), (g.walls, g.world_objects, g.proj_collidables))
+    PT3 = cls.MapObject((200, 20), v.RED, (3400, 420), (g.floors, g.world_objects, g.proj_collidables))
     #2 BLOCKS
     #1 NME
 
     #Second floor
+    PT1 = cls.MapObject((3480, 150), v.RED, (2600, 2400), (g.floors, g.world_objects, g.proj_collidables))
+    CLN3 = cls.MapObject((3500, 150), v.CYAN, (2450, 2550), (g.ceilings, g.world_objects, g.proj_collidables))
+    WALL5 = cls.MapObject((200, 770), v.RED, (800, 2200), (g.walls, g.world_objects, g.proj_collidables))
+    PT5 = cls.MapObject((200, 20), v.RED, (800, 1815), (g.floors, g.world_objects, g.proj_collidables))
+
 
     #Third floor
+    PT1 = cls.MapObject((3480, 75), v.RED, (1750, 4067), (g.floors, g.world_objects, g.proj_collidables))
+    PT4 = cls.MapObject((200, 20), v.CYAN, (3390, 3535), (g.floors, g.world_objects, g.proj_collidables))
+    WALL4 = cls.MapObject((200, 630), v.RED, (3390, 3855), (g.walls, g.world_objects, g.proj_collidables))
+    CLN4 = cls.MapObject((3480, 75), v.RED, (1750, 4132), (g.ceilings, g.world_objects, g.proj_collidables))
+    
 
     #Bottom floor
+    # EXIT DOOR
 
     #Player and collision shadow
     P1 = cls.Player()
