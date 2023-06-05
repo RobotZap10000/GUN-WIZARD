@@ -1,13 +1,11 @@
 #importing
-import pygame, sys
+import pygame
 from pygame.locals import *
-import random, time
 import variables as v
 import texts as txt
 import groups as g
 import menus as menu
 import functions as func
-import platform as pyplatform
 
 #initializing
 pygame.init()

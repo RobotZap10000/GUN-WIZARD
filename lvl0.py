@@ -120,8 +120,8 @@ def StartMap():
     TUT_TXT14 = txt.Text(txt.font_subtitle, "LMB TO FIRE", v.GREEN, (0,0))
     TUT_BOX14 = cls.MapText(color=v.PURPLE, text=TUT_TXT14, originxy=(2500, 3100))
 
-    WALL7 = cls.MapObject((60, 500), v.CYAN, (1000, 3150), (g.walls, g.proj_collidables, g.world_objects))
-    PT10 = cls.MapObject((60, 20), v.BLUE, (1000, 2890), (g.floors, g.proj_collidables, g.world_objects))
+    WALL7 = cls.MapObject((60, 500), v.RED, (1000, 3150), (g.walls, g.proj_collidables, g.world_objects))
+    PT10 = cls.MapObject((60, 20), v.RED, (1000, 2890), (g.floors, g.proj_collidables, g.world_objects))
     PT11 = cls.MapObject((200, 20), v.GREEN, (1400, 3000), (g.platforms, g.world_objects))
     PT12 = cls.MapObject((200, 20), v.GREEN, (1800, 3200), (g.platforms, g.world_objects))
     PT13 = cls.MapObject((200, 20), v.GREEN, (600, 3000), (g.platforms, g.world_objects))
@@ -144,7 +144,7 @@ def StartMap():
 
     
     # #Player
-    P1 = cls.Player(spawn=(300, 200))
+    P1 = cls.Player(spawn=(300, 200), vic_cond="NME_KILLED")
 
     # #Tutorial level limits
     CENTER = cls.MapObject((30, 30), v.MAGENTA, (0, 0), (g.debug, g.world_objects, g.map_center))
