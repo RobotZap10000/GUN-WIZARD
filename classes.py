@@ -641,10 +641,10 @@ class Enemy(pygame.sprite.Sprite):
             for player in g.players:
                 healthdrop = False
                 if player.health < 100:
-                    rng = random.randint(0, 2)
+                    rng = random.randint(0, 1)
                     if rng == 0: 
                         healthdrop = True
-                if player.health < 40:
+                if player.health <= 50:
                     healthdrop = True
                 
                 if healthdrop:
