@@ -57,8 +57,8 @@ class Button():
 #Button(size, origin, function, font, text, textcolor, idle, hover, press, group)
 #Level select menu
 lvl0_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+300), func.Startlvl0, txt.font_lvlselect, "TUTORIAL", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
-lvl1_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+400), func.Startlvl1, txt.font_lvlselect, "LEVEL 1", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
-lvl2_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+500), bruh, txt.font_lvlselect, "BRUH", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
+lvl1_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+400), func.Startlvl1, txt.font_lvlselect, "NME", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
+lvl2_button = Button((500, 80), (v.WIDTH/2, v.HEIGHT/5+500), func.Startlvl2, txt.font_lvlselect, "BOSS", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 lvlselect_back = Button((300, 100), (v.WIDTH/9*3, v.HEIGHT/7*6), func.ReturnToTitle, txt.font_lvlselectbig, "BACK", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 lvlselect_quit = Button((300, 100), (v.WIDTH/9*6, v.HEIGHT/7*6), func.QuitGame, txt.font_lvlselectbig, "QUIT", v.TITLEGREEN, (v.BUTTONGRAY, 255), (v.RED, 255), (v.BUTTONORANGE, 255), g.lvl_select_buttons)
 

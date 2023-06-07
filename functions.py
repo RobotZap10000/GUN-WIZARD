@@ -7,6 +7,7 @@ import groups as g
 #import menus as menu
 import lvl0
 import lvl1
+import lvl2
 
 vec = pygame.math.Vector2
 
@@ -105,9 +106,23 @@ def Startlvl1():
     v.DEAD = False
     pygame.mouse.set_visible(1)
 
+def Startlvl2():
+    for entity in g.all_sprites:
+        entity.kill()
+    for entity in g.debug:
+        entity.kill()
+    lvl2.StartMap()
+    v.LEVEL = 2
+    v.GAMESTATE = 2
+    v.CONTROLS = 1
+    v.VICTORY = False
+    v.DEAD = False
+    pygame.mouse.set_visible(1)
+
 levellist = [
     Startlvl0,
-    Startlvl1
+    Startlvl1,
+    Startlvl2
 ]
 
 def RestartLvl():
