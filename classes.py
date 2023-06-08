@@ -573,6 +573,7 @@ class Enemy(pygame.sprite.Sprite):
         self.world_collide = world_collide
         self.limbs = []
         self.huds = []
+        self.target = None
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.enemies.add(self)
@@ -714,6 +715,8 @@ class Enemy(pygame.sprite.Sprite):
                 limb.kill()
             for hud in self.huds:
                 hud.kill()
+            if self.target != None:
+                self.target.limbs.remove(self)
             self.kill()
             
             self.deathcounting = 0
@@ -901,61 +904,105 @@ class Enemy(pygame.sprite.Sprite):
 #Boss enemy TORSO
 class Boss(Enemy):
     def __init__(self, originxy):
-        Enemy.__init__(self, originxy, size=(500, 500), color=v.ORANGE, speed=0.5, jumpvel=0, gravity=0, health=1000, dmg_mel=5, kb=(20, 20, True), kb_immune=True, world_collide=False, deaggro=0, cycle_len=1800)
+        Enemy.__init__(self, originxy, size=(500, 500), color=v.ORANGE, speed=0.5, jumpvel=0, gravity=0, health=1000, dmg_mel=5, kb=(20, 20, True), kb_immune=True, world_collide=False, deaggro=0, cycle_len=3000)
         BOSSARM_LEFT = Boss_Arm((0, 0), self, "left")
         BOSSARM_RIGHT = Boss_Arm((0, 0), self, "right")
         BOSSHEAD = Boss_Head((0,0), self)
         BOSSHEALTH_HUD = HUD(self, (300, 80), v.PURPLE, (v.WIDTH-350, v.HEIGHT - 130), "boss_health")
+        self.aim = 0
         self.fric = -0.01
         self.cycle = 0
 
     def shoot(self):
-        pass
+        BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=15)
 
     def brain(self):
-        if self.cycle < self.cycle_len:
-            self.cycle += 1
-        else:
-            self.cycle = 0
+        if v.BRAIN:
+            if self.cycle < self.cycle_len:
+                self.cycle += 1
+            else:
+                self.cycle = 0
 
+    def aiming(self):
+        for player in g.players:
+            self.aim = GetAngle(self.rect.centerx, self.rect.centery, (player.pos.x + player.vel.x * 20), player.pos.y)
 
     def move(self):
         for player in g.players:
             for center in g.map_center:
                 if v.BRAIN:
+                    
+                    if len(self.limbs) != 0:
+                        # FOLLOWING PLAYER
+                        if self.cycle < 300:
+                            if self.pos.x > player.pos.x: #OPTIMISE
+                                self.acc.x = -self.speed
+                                
+                            else:
+                                self.acc.x = self.speed
+                            # self.fric = -0.01
 
-                    # FOLLOWING PLAYER
-                    if self.cycle < 300:
+                        # RETURNING TO MAP CENTER
+                        elif self.cycle < 600:
+                            if self.pos.x - center.rect.centerx > 50:
+                                self.acc.x = -self.speed
+                            elif self.pos.x - center.rect.centerx < -50:
+                                self.acc.x = self.speed
+                            else:
+                                self.pos.x = center.rect.centerx
+                                self.vel.x = 0
+                                self.cycle = 600
+                        
+                        # MOVING AROUND
+                        elif self.cycle < 690:
+                            self.acc.x = -self.speed
+
+                        elif self.cycle < 880:
+                            self.acc.x = self.speed
+
+                        elif self.cycle < 1050:
+                            self.acc.x = -self.speed
+
+                        elif self.cycle < 1350:
+                            if self.pos.x > player.pos.x: #OPTIMISE
+                                self.acc.x = -self.speed
+                                
+                            else:
+                                self.acc.x = self.speed
+
+
+                        elif self.cycle < 1650:
+                            if self.pos.x - center.rect.centerx > 50:
+                                self.acc.x = -self.speed
+                            elif self.pos.x - center.rect.centerx < -50:
+                                self.acc.x = self.speed
+                            else:
+                                self.pos.x = center.rect.centerx
+                                self.vel.x = 0
+                                self.cycle = 1650
+
+                        elif self.cycle < 2010:
+                            self.vel.x = 0
+
+                        else:
+                            self.cycle = 0
+
+                    else:
                         if self.pos.x > player.pos.x: #OPTIMISE
                             self.acc.x = -self.speed
                             
                         else:
                             self.acc.x = self.speed
-                        # self.fric = -0.01
 
-                    # RETURNING TO MAP CENTER
-                    elif self.cycle < 600:
-                        if self.pos.x - center.rect.centerx > 50:
-                            self.acc.x = -self.speed
-                        elif self.pos.x - center.rect.centerx < -50:
-                            self.acc.x = self.speed
-                        else:
-                            self.pos.x = center.rect.centerx
-                            self.vel.x = 0
-                            self.cycle = 600
-                    
-                    # MOVING AROUND
-                    elif self.cycle < 690:
-                        self.acc.x = -self.speed
+                        if self.cycle > 60:
+                            self.cycle = 0
 
-                    elif self.cycle < 880:
-                        self.acc.x = self.speed
+                        if self.cycle == 30:
+                            self.aiming()
 
-                    elif self.cycle < 1050:
-                        self.acc.x = -self.speed
+                        if self.cycle > 30:
+                            self.shoot()
 
-                    elif self.cycle < 1100:
-                        self.cycle = 0
 
             self.acc.x += self.vel.x * self.fric
             
@@ -992,12 +1039,13 @@ class Boss_Arm(Enemy):
 
         elif self.target.cycle < 1050:
             if self.target.cycle % 15 == 0:
-                BOSSBOMB = Projectile((75, 75), v.YELLOW, None, (0, v.GRAVITY), 180, (0, 20), None, None, 180, self, 0, (10, 30), explosive=(50, 200, 20, 30, 50, 30), originxy=self.rect.midtop, dmg=30)
-
-    # def shoot(self):
+                self.shoot()
+    def shoot(self, type=None):
     #     BOSSMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True, originxy=(self.rect.midbottom))
     #     BOSSMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim+180, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True, originxy=(self.rect.midtop))
-        
+        if type == None:
+            BOSSBOMB = Projectile((75, 75), v.YELLOW, None, (0, v.GRAVITY), 180, (0, 20), None, None, 180, self, 0, (10, 30), explosive=(50, 200, 30, 30, 50, 30), originxy=self.rect.midtop, dmg=30)
+
 
 class Boss_Head(Enemy):
     def __init__(self, originxy, target):
@@ -1015,18 +1063,48 @@ class Boss_Head(Enemy):
             if self.target.cycle < 120:
                 pass
 
+            elif self.target.cycle == 120:
+                self.aiming()
+
             elif self.target.cycle < 150:
-                for player in g.players:
-                    self.aim = GetAngle(self.pos.x, self.pos.y, (player.pos.x + player.vel.x * 60), player.pos.y)
-                BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 30), None, None, 60, self, 0, (10, 20), dmg=5)
+                self.shoot()
 
             elif self.target.cycle < 240:
                 pass
 
+            elif self.target.cycle == 240:
+                self.aiming()
+
             elif self.target.cycle < 270:
-                for player in g.players:
-                    self.aim = GetAngle(self.pos.x, self.pos.y, (player.pos.x + player.vel.x * 100), player.pos.y)
-                BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 30), None, None, 60, self, 0, (10, 20), dmg=5)
+                self.shoot()
+
+            elif self.target.cycle < 1050:
+                pass
+
+            elif self.target.cycle < 1170:
+                pass
+
+            elif self.target.cycle == 1170:
+                self.aiming()
+
+            elif self.target.cycle < 1200:
+                self.shoot()
+
+            elif self.target.cycle < 1290:
+                pass
+
+            elif self.target.cycle == 1290:
+                self.aiming()
+
+            elif self.target.cycle < 1320:
+                self.shoot()
+
+    def shoot(self):
+        BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=30)
+
+    def aiming(self):
+        for player in g.players:
+            self.aim = GetAngle(self.pos.x, self.pos.y, (player.pos.x + player.vel.x * 20), player.pos.y)
 
 #Scrollable map objects
 class MapObject(pygame.sprite.Sprite):
