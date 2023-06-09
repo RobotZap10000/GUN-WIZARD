@@ -126,9 +126,9 @@ class HUD(pygame.sprite.Sprite):
                 self.target.health = 0
             self.surf.fill(self.color)
             self.rect = self.surf.get_rect(topleft = self.originxy)
-            self.symbol = txt.Text(txt.font_icon, "☠ ", v.WHITE, (0, 0))
+            self.symbol = txt.Text(txt.font_icon, "☠ ", v.RED, (0, 0))
             self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
-            self.text = txt.Text(txt.font_lvlselect, str(self.target.health), v.WHITE, (0, 0))
+            self.text = txt.Text(txt.font_lvlselect, str(self.target.health), v.RED, (0, 0))
             self.text.rect.midleft = self.symbol.rect.midright
         
         self.build_background(20)
@@ -1040,11 +1040,44 @@ class Boss_Arm(Enemy):
         elif self.target.cycle < 1050:
             if self.target.cycle % 15 == 0:
                 self.shoot()
-    def shoot(self, type=None):
+
+        elif self.target.cycle < 1650:
+            pass
+
+        elif self.target.cycle < 2010:
+            if self.target.cycle % 30 == 0:
+                    self.aiming("bottom")
+                    self.shoot(1, "bottom")
+
+                    self.aiming("top")
+                    self.shoot(1, "top")
+
+    def aiming(self, origin):
+        self.origin = self.rect.centery
+
+        if origin == "top":
+            self.origin = self.pos.y - self.size[1]
+
+        if origin == "bottom":
+            self.origin = self.pos.y
+
+        for player in g.players:
+            self.aim = GetAngle(self.pos.x, self.origin, player.pos.x, player.pos.y)
+
+        
+
+    def shoot(self, type=None, origin=None):
     #     BOSSMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True, originxy=(self.rect.midbottom))
     #     BOSSMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim+180, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True, originxy=(self.rect.midtop))
         if type == None:
             BOSSBOMB = Projectile((75, 75), v.YELLOW, None, (0, v.GRAVITY), 180, (0, 20), None, None, 180, self, 0, (10, 30), explosive=(50, 200, 30, 30, 50, 30), originxy=self.rect.midtop, dmg=30)
+        else:
+            if origin == None:
+                BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
+            elif origin == "top":
+                BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midtop)
+            elif origin == "bottom":
+                BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midbottom)
 
 
 class Boss_Head(Enemy):
@@ -1099,8 +1132,20 @@ class Boss_Head(Enemy):
             elif self.target.cycle < 1320:
                 self.shoot()
 
-    def shoot(self):
-        BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=30)
+            elif self.target.cycle < 1650:
+                pass
+
+            elif self.target.cycle < 2010:
+                if self.target.cycle % 30 == 0:
+                    self.aiming()
+                    self.shoot(1)
+
+
+    def shoot(self, type=None):
+        if type == None:
+            BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=30)
+        else:
+            BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
 
     def aiming(self):
         for player in g.players:

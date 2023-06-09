@@ -21,8 +21,6 @@ displaysurface = pygame.display.set_mode((v.WIDTH, v.HEIGHT))
 pygame.display.set_caption("GUN WIZARD")
 
 
-    
-
 #Game loop
 
 while True:
