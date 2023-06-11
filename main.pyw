@@ -20,6 +20,9 @@ FramePerSec = pygame.time.Clock()
 displaysurface = pygame.display.set_mode((v.WIDTH, v.HEIGHT))
 pygame.display.set_caption("GUN WIZARD")
 
+func.PlayMusic("notmymusic1.wav")
+
+MUSIC_END = pygame.USEREVENT+1
 
 #Game loop
 
@@ -94,6 +97,11 @@ while True:
         for event in pygame.event.get():
             if event.type == QUIT:
                func.QuitGame()
+
+            #Music end
+            if event.type == MUSIC_END:
+                if v.CUTSCENE:
+                    func.ForceCutscene()
 
             #Checking for key press
             if event.type == pygame.KEYDOWN:

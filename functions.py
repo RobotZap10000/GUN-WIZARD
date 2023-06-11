@@ -9,7 +9,17 @@ import lvl0
 import lvl1
 import lvl2
 
+pygame.init()
 vec = pygame.math.Vector2
+
+MUSIC_END = pygame.USEREVENT+1
+
+#Playing music
+def PlayMusic(music):
+    if v.MUSIC != music:
+        v.MUSIC = music
+        pygame.mixer.music.load(v.MUSIC)
+        pygame.mixer.music.play(-1)
 
 #Quitting game
 def QuitGame():
@@ -25,6 +35,7 @@ def KillAll():
 
 #Return to title screen
 def ReturnToTitle():
+    PlayMusic("notmymusic1.wav")
     KillAll()
     v.GAMESTATE = 0
     v.PAUSED = False
@@ -33,6 +44,7 @@ def ReturnToTitle():
 
 #Return to level select screen
 def ReturnToLvlSelect():
+    PlayMusic("notmymusic1.wav")
     KillAll()
     v.GAMESTATE = 1
     v.PAUSED = False
@@ -142,6 +154,10 @@ def ToggleControls():
             player.dropping = False
 
 def Victory():
+    pygame.mixer.music.stop()
+    v.MUSIC = "notmymusic5.wav"
+    pygame.mixer.music.load(v.MUSIC)
+    pygame.mixer.music.play(1)
     ToggleControls()
     v.VICTORY = True
 
@@ -149,6 +165,7 @@ def VictoryCheck():
     if v.VICTORY:
         v.VICTORY_TIME -= 1
         if v.VICTORY_TIME <= 0:
+            pygame.mixer.music.stop()
             v.LEVEL += 1
             v.VICTORY = False
             v.VICTORY_TIME = v.VICTORY_DUR
@@ -157,23 +174,81 @@ def VictoryCheck():
             else:
                 RestartLvl()
 
-def Cutscene():
-    ToggleControls()
-    v.CUTSCENE = True
-    for player in g.players:
-        player.buff = "manaboost"
-    for prop in g.props:
-        g.floors.remove(prop)
+def Cutscene(type):
+    if type == 0:
+        v.MUSIC = "notmymusic4.1.wav"
+        pygame.mixer.music.load(v.MUSIC)
+        pygame.mixer.music.play(1)
+        ToggleControls()
+        pygame.mixer.music.set_endevent(MUSIC_END)
+        v.CUTSCENE = True
+        for player in g.players:
+            player.buff = "manaboost"
+        for prop in g.props:
+            g.floors.remove(prop)
+
+    if type == 1:
+        v.MUSIC = "notmymusic4.3.wav"
+        pygame.mixer.music.load(v.MUSIC)
+        pygame.mixer.music.play(1)
+        ToggleControls()
+        v.CUTSCENE = True
+        for focus in g.focus:
+            for boss in g.enemies:
+                if boss.tag == "BOSS":
+                    focus.target = boss
+
+    v.CUTSCENE_TYPE = type
+    v.CUTSCENE_TIME = v.CUTSCENE_DUR[v.CUTSCENE_TYPE]
 
 def CutsceneCheck():
     if v.CUTSCENE:
         v.CUTSCENE_TIME -= 1
-        if v.CUTSCENE_TIME <= 0:
-            ToggleControls()
-            v.CUTSCENE = False
-            v.CUTSCENE_TIME = v.CUTSCENE_DUR
-            for player in g.players:
-                player.spawnboss()
+        if v.CUTSCENE_TYPE == 0:
+            if v.CUTSCENE_TIME <= 0:
+                ToggleControls()
+                v.CUTSCENE = False
+                v.CUTSCENE_TIME = v.CUTSCENE_DUR[v.CUTSCENE_TYPE]
+                PlayMusic("notmymusic4.2.wav")
+                for player in g.players:
+                    player.spawnboss()
+                pygame.mixer.music.set_endevent(MUSIC_END)
+
+        if v.CUTSCENE_TYPE == 1:
+            if v.CUTSCENE_TIME == 330:
+                for boss in g.enemies:
+                    if boss.tag == "BOSS":
+                        for exp in g.explosions:
+                            exp.kill()
+                        boss.explode()
+                        boss.collision.kill()
+                        boss.kill()
+                for limb in g.boss_limbs:
+                    limb.collision.kill()
+                    limb.kill()
+                for hud in g.HUD:
+                    if hud.unit == "boss_health":
+                        hud.kill()
+
+            elif v.CUTSCENE_TIME <= 0:
+                Victory()
+                ToggleControls()
+                for player in g.players:
+                    for focus in g.focus:
+                        focus.target = player
+                v.CUTSCENE = False
+                v.CUTSCENE_TIME = v.CUTSCENE_DUR[v.CUTSCENE_TYPE]
+
+
+def ForceCutscene():
+    if v.CUTSCENE:
+        ToggleControls()
+        v.CUTSCENE = False
+        v.CUTSCENE_TIME = v.CUTSCENE_DUR
+        PlayMusic("notmymusic4.2.wav")
+        for player in g.players:
+            player.spawnboss()
+        pygame.mixer.music.set_endevent()
 
 
             
