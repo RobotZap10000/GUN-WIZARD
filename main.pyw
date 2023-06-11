@@ -21,8 +21,6 @@ displaysurface = pygame.display.set_mode((v.WIDTH, v.HEIGHT))
 pygame.display.set_caption("GUN WIZARD")
 
 
-    
-
 #Game loop
 
 while True:
@@ -116,19 +114,16 @@ while True:
                     
                 #debugging
                 if event.key == pygame.K_c:
-                    v.FPS = 2
-                    #pass                        #Use this if nothing needed
+                    # v.FPS = 2
+                    pass                        #Use this if nothing needed
 
                 #debugging
                 if event.key == pygame.K_v:
-                    v.FPS = 60
-                    #pass
+                    # v.FPS = 60
+                    pass
 
                 if event.key == pygame.K_b:
                     v.BRAIN = not v.BRAIN
-
-                if event.key == pygame.K_f:
-                    func.ToggleControls()
                 
                 #debug menu
                 if event.key == pygame.K_i:
@@ -207,7 +202,7 @@ while True:
                 proj.move()
                 proj.collide()
                 proj.update()
-
+                
             for exp in g.explosions:
                 exp.update()
 
@@ -223,6 +218,7 @@ while True:
 
         #CHECK VICTORY
         func.VictoryCheck()
+        func.CutsceneCheck()
 
         #Surface drawing
         displaysurface.fill(v.BGGRAY)

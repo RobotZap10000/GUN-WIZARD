@@ -29,9 +29,10 @@ def GetAngle(startx, starty, endx, endy): #start, end
 
 #HUD element
 class HUD(pygame.sprite.Sprite):
-    def __init__(self, target, size, color, originxy, unit):
+    def __init__(self, target, size, color, originxy, unit, margin=20):
         super().__init__()
         self.target = target
+        self.target.huds.append(self)
         self.size = vec(size)
         self.surf = pygame.Surface(self.size)
         self.color = color
@@ -45,7 +46,6 @@ class HUD(pygame.sprite.Sprite):
         g.all_sprites.add(self)
         g.HUD.add(self)
 
-    def build_background(self, margin):
         self.bg_margin = margin
         self.bg_width = round(self.size[0] + self.bg_margin)
         self.bg_height = round(self.size[1] + self.bg_margin)
@@ -53,11 +53,20 @@ class HUD(pygame.sprite.Sprite):
         self.background.fill((20, 20, 20))
         self.background_rect = self.background.get_rect(topleft = (self.originxy[0] - self.bg_margin /2, self.originxy[1] - self.bg_margin/2))
 
+    def build_background(self, margin):
+        # self.bg_margin = margin
+        # self.bg_width = round(self.size[0] + self.bg_margin)
+        # self.bg_height = round(self.size[1] + self.bg_margin)
+        # self.background = pygame.Surface((self.bg_width, self.bg_height))
+        # self.background.fill((20, 20, 20))
+        # self.background_rect = self.background.get_rect(topleft = (self.originxy[0] - self.bg_margin /2, self.originxy[1] - self.bg_margin/2))
+        pass
+
     def update(self):
         if self.unit == "player_health":
             #CHANGE BAR LENGTH
             if not v.DEAD:
-                self.surf = pygame.Surface((self.size[0]*(self.target.health / 100), self.size[1]))
+                self.surf = pygame.Surface((self.size[0]*(self.target.health / self.target.maxhealth), self.size[1]))
             else:
                 self.surf = pygame.Surface((0, self.size[1]))
             self.surf.fill(self.color)
@@ -70,13 +79,19 @@ class HUD(pygame.sprite.Sprite):
 
         if self.unit == "player_mana":
             #CHANGE BAR LENGTH
+            if self.target.buff != None:
+                self.target.mana = 100
+                self.color = v.MAGENTA
+                self.text = txt.Text(txt.font_icon, "∞", v.WHITE, (0, 0))
+            else:
+                self.text = txt.Text(txt.font_lvlselect, str(round(self.target.mana)), v.WHITE, (0, 0))
             if not v.DEAD:
                 self.surf = pygame.Surface((self.size[0]*(self.target.mana / 100), self.size[1]))
             self.surf.fill(self.color)
             self.rect = self.surf.get_rect(topleft = self.originxy)
             self.symbol = txt.Text(txt.font_icon, "★ ", v.WHITE, (0, 0))
             self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
-            self.text = txt.Text(txt.font_lvlselect, str(round(self.target.mana)), v.WHITE, (0, 0))
+            # self.text = txt.Text(txt.font_lvlselect, str(round(self.target.mana)), v.WHITE, (0, 0))
             self.text.rect.midleft = self.symbol.rect.midright
             #self.build_background(20)
             #RENDER TEXT
@@ -84,13 +99,22 @@ class HUD(pygame.sprite.Sprite):
         
         if self.unit == "player_weapon":
             if self.target.weapon == 1:
-                self.color = v.GREEN
+                if self.target.buff == "manaboost":
+                    self.color = v.PURPLE
+                else:
+                    self.color = v.GREEN
                 self.text = txt.Text(txt.font_lvlselect, "MAGIC", v.BLACK, self.rect.center)
             elif self.target.weapon == 2:
-                self.color = v.RED
+                if self.target.buff == "manaboost":
+                    self.color = v.BLUE
+                else:
+                    self.color = v.RED
                 self.text = txt.Text(txt.font_lvlselect, "FLAME", v.BLACK, self.rect.center)
             elif self.target.weapon == 3:
-                self.color = v.YELLOW
+                if self.target.buff == "manaboost":
+                    self.color = v.ORANGE
+                else:
+                    self.color = v.YELLOW
                 self.text = txt.Text(txt.font_lvlselect, "BOMB", v.BLACK, self.rect.center)
             else:
                 self.color = v.MAGENTA
@@ -101,6 +125,25 @@ class HUD(pygame.sprite.Sprite):
                 self.surf.set_alpha(128)
             else:
                 self.surf.set_alpha(255)
+
+        if self.unit == "boss_health":
+            self.totalhealth = self.target.health
+            self.totalhealth += sum(limb.health for limb in g.boss_limbs)
+            #CHANGE BAR LENGTH
+            if self.target.health > 0:
+                self.surf = pygame.Surface((self.size[0]*(self.totalhealth / 4000), self.size[1]))
+            else:
+                self.surf = pygame.Surface((0, self.size[1]))
+                self.target.health = 0
+            self.surf.fill(self.color)
+            self.rect = self.surf.get_rect(topleft = self.originxy)
+            self.symbol = txt.Text(txt.font_icon, "☠ ", v.WHITE, (0, 0))
+            # self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
+            # self.text = txt.Text(txt.font_lvlselect, str(self.totalhealth), v.WHITE, (0, 0))
+            self.text = txt.Text(txt.font_lvlselect, "BOSS", v.WHITE, (0, 0))
+            self.text.rect.center = self.background_rect.center
+            self.symbol.rect.midright = self.text.rect.midleft
+            # self.text.rect.midleft = self.symbol.rect.midright
         
         self.build_background(20)
 
@@ -110,7 +153,7 @@ class HUD(pygame.sprite.Sprite):
 
 #Player
 class Player(pygame.sprite.Sprite):
-    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), spawn=(v.WIDTH/2,v.HEIGHT-150), speed=v.ACC, color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100, vic_cond=None):
+    def __init__(self, size=(v.PLAYERWIDTH, v.PLAYERHEIGHT), spawn=(v.WIDTH/2,v.HEIGHT-150), speed=v.ACC, color=v.YELLOW, jumpvel=v.JUMPVEL, gravity=v.GRAVITY, team="players", health=100, vic_cond=None, buff=None):
         super().__init__()
         self.size = size
         self.surf = pygame.Surface(self.size)
@@ -135,11 +178,16 @@ class Player(pygame.sprite.Sprite):
         self.immunity = 0
         self.stun = 0
         self.team = team
-        self.health = health
+        self.maxhealth = health
+        self.health = self.maxhealth
         self.mana = 100
         self.manawait = 240
         self.lastfired = self.manawait
         self.vic_cond = vic_cond
+        self.buff = buff
+        self.huds = []
+        self.regen_cycle_len = 12
+        self.regen_cycle = self.regen_cycle_len
         g.players.add(self)
         g.all_sprites.add(self)
         g.world_objects.add(self)
@@ -229,6 +277,7 @@ class Player(pygame.sprite.Sprite):
                         self.vel += self.kb_vel
                         self.hitsexp[0].affected.append(self)
                         self.health -= self.hitsexp[0].dmg
+                        self.health = round(self.health)
                         
                         self.immunity = self.iframes
                         self.stun = self.hitsexp[0].kb[1]
@@ -254,15 +303,19 @@ class Player(pygame.sprite.Sprite):
                     self.stun = self.hitsenemy[0].kb[1]
                     self.collision.move()
 
-                if self.hitsenemy[0].melee_dmg >= 0:
+                if self.hitsenemy[0].melee_dmg > 0:
                     self.health -= self.hitsenemy[0].melee_dmg
+                    self.health = round(self.health)
                     self.immunity = self.iframes
 
-                else:
+                elif self.hitsenemy[0].melee_dmg < 0:
                     self.health -= self.hitsenemy[0].melee_dmg
                     self.health = min(self.health, 100)
                     self.hitsenemy[0].collision.kill()
                     self.hitsenemy[0].kill()
+
+                else:
+                    self.immunity = 10
 
         #Enemy projectiles
         if self.immunity == 0:
@@ -277,6 +330,7 @@ class Player(pygame.sprite.Sprite):
                     self.kb_vel = self.kb_vel.rotate(self.kb_rot)
                     self.vel += self.kb_vel
                     self.health -= self.hitsproj[0].dmg
+                    self.health = round(self.health)
                     
                     self.immunity = self.iframes
                     self.stun = self.hitsproj[0].kb[1]
@@ -403,6 +457,15 @@ class Player(pygame.sprite.Sprite):
             self.collision.kill()
             self.kill()
             v.DEAD = True
+        else:
+            if self.buff != None:
+                if self.regen_cycle > 0:
+                    self.regen_cycle -= 1
+                else:
+                    self.health += 1
+                    self.health = min(self.health, self.maxhealth)
+                    self.regen_cycle = self.regen_cycle_len
+
 
     #Player jumping
     def jump(self):
@@ -435,22 +498,37 @@ class Player(pygame.sprite.Sprite):
             #(self, size, color, acc, graviwty, rot, vel, maxvel, inherit, life, shooter, firerate, knockback, flame)
         
             if self.weapon == 1:
-                if self.mana >= 6: 
+                if self.buff == "manaboost":
+                    PLAYERMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 40), None, None, 180, self, 8, (2, 10), cost=0, dmg=6)
+                    self.lastfired = 0
+
+                elif self.mana >= 6: 
                     PLAYERMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), cost=6, dmg=6)
                     self.lastfired = 0
 
             if self.weapon == 2:
-                if self.mana >= 0.6:
+                if self.buff == "manaboost":
+                    PLAYERFLAME = Projectile((30, 30), v.BLUE, None, (0, -0.1), self.aim, (0, 20), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0, dmg=10, flame=True)
+                    PLAYERFLAME = Projectile((30, 30), v.BLUE, None, (0, -0.1), self.aim + 20, (0, 20), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0, dmg=10, flame=True)
+                    PLAYERFLAME = Projectile((30, 30), v.BLUE, None, (0, -0.1), self.aim - 20, (0, 20), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0, dmg=10, flame=True)
+                    self.lastfired = 0
+                elif self.mana >= 0.6:
                     PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=3, dmg=6, flame=True)
                     self.lastfired = 0
 
             if self.weapon == 3:
-                if self.mana >= 40:
-                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 20, (5, 0), cost=40, dmg=10, explosive=(50, 150, 30, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
-                    
+                if self.buff == "manaboost":
+                    PLAYERBOMB = Projectile((80, 80), v.ORANGE, None, (0, 1), self.aim, (0, 20), None, self.vel, 30, self, 60, (5, 0), cost=0, dmg=10, explosive=(100, 400, 60, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
                     self.lastfired = 0
 
-        
+                elif self.mana >= 40:
+                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 20, (5, 0), cost=40, dmg=10, explosive=(50, 150, 30, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
+                    self.lastfired = 0
+
+    def spawnboss(self):
+        for center in g.map_center:
+            boss_spawn = vec(center.rect.center) - (0, 225)
+        BOSS = Boss(boss_spawn)
                 
     
 #Player collision shadow:
@@ -491,13 +569,14 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20, kb=(10, 20, True), team="enemy", flag="count_death"):
+    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20, kb=(10, 20, True), team="enemy", flag="count_death", kb_immune=False, world_collide=True, cycle_len=240, tag=None, buff=None):
         super().__init__()
         self.size = size
         self.color = color
         self.surf = pygame.Surface(self.size)
         self.surf.fill(self.color)
-        self.rect = self.surf.get_rect(midbottom = originxy)
+        self.spawn = originxy
+        self.rect = self.surf.get_rect(midbottom = self.spawn)
         self.speed = speed
         self.jumpvel = jumpvel
         self.gravity = gravity
@@ -507,17 +586,25 @@ class Enemy(pygame.sprite.Sprite):
         self.exp_immunity = 0
         self.stun = 0
         self.team = team
-        self.cycle_len = 240
+        self.cycle_len = cycle_len
         self.cycle = self.cycle_len
         self.aggrostate = False
         self.aggro = aggro
         self.deaggro = deaggro
         self.aggrolen = 30
         self.aggroleft = self.aggrolen
-        self.health = health
+        self.maxhealth = health
+        self.health = self.maxhealth
         self.melee_dmg = dmg_mel
         self.ai = ai
         self.flag = flag
+        self.kb_immune = kb_immune
+        self.world_collide = world_collide
+        self.limbs = pygame.sprite.Group()
+        self.huds = []
+        self.target = None
+        self.tag = tag
+        self.buff = buff
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.enemies.add(self)
@@ -557,13 +644,14 @@ class Enemy(pygame.sprite.Sprite):
                                 else:
                                     self.acc.x = self.speed
 
-                                if self.pos.y > player.pos.y:
-                                    #CHECK IF ENEMY CAN REACH PLAYER WITH JUMP, THEN:
-                                    if abs(player.pos.x - self.pos.x) < (abs(self.jumpvel) / self.gravity * (v.ACC*0.8) * 10):
-                                        self.jump()
-                                else:
-                                    self.cancel_jump()
-                                    self.dropping = True
+                                if self.jumpvel != 0:
+                                    if self.pos.y > player.pos.y:
+                                        #CHECK IF ENEMY CAN REACH PLAYER WITH JUMP, THEN:
+                                        if abs(player.pos.x - self.pos.x) < (abs(self.jumpvel) / self.gravity * (v.ACC*0.8) * 10):
+                                            self.jump()
+                                    else:
+                                        self.cancel_jump()
+                                        self.dropping = True
 
             if self.pressed_keys[K_g]: #OPTIMISE
                 self.acc.x = -self.speed
@@ -591,13 +679,16 @@ class Enemy(pygame.sprite.Sprite):
                     self.aggroleft = self.aggrolen
 
                 self.playerdiff = vec(self.pos - player.pos)
-                if not self.aggrostate:
-                    if abs(self.playerdiff.length()) < self.aggro:
-                        self.aggrostate = True
-                        self.cycle = self.cycle_len
+                if self.deaggro != 0:
+                    if not self.aggrostate:
+                        if abs(self.playerdiff.length()) < self.aggro:
+                            self.aggrostate = True
+                            self.cycle = self.cycle_len
+                    else:
+                        if abs(self.playerdiff.length()) > self.deaggro:
+                            self.aggrostate = False
                 else:
-                    if abs(self.playerdiff.length()) > self.deaggro:
-                        self.aggrostate = False
+                    self.aggrostate = True
                         
                 if self.aggrostate:
                     if self.cycle > 0:
@@ -640,16 +731,28 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 0
             for player in g.players:
                 healthdrop = False
-                if player.health < 100:
-                    rng = random.randint(0, 2)
-                    if rng == 0: 
+
+                if self not in g.boss_limbs:
+                    if player.health < 100:
+                        rng = random.randint(0, 1)
+                        if rng == 0: 
+                            healthdrop = True
+                    if player.health <= 50:
                         healthdrop = True
-                if player.health < 40:
+                else:
                     healthdrop = True
                 
                 if healthdrop:
                     HEALTHPACK = Enemy(self.pos, size=(50, 50), color=v.HEALTHGREEN, health=999, ai=2, dmg_mel=-30, kb=(0, 0, False), flag="dont_count")
             self.collision.kill()
+            if self.tag != None:
+                for limb in g.boss_limbs:
+                    limb.collision.kill()
+                    limb.kill()
+            for hud in self.huds:
+                hud.kill()
+            if self.target != None:
+                self.target.limbs.remove(self)
             self.kill()
             
             self.deathcounting = 0
@@ -676,132 +779,138 @@ class Enemy(pygame.sprite.Sprite):
         #if TICK > 0:
 
         #Self damage
+        if self.buff == None:
+            #Explosions
+            if self.exp_immunity == 0:
+                self.hitsexp = pygame.sprite.spritecollide(self.collision, g.explosions, False)
+                if self.hitsexp:
+                    if self not in self.hitsexp[0].affected:
+                        if self.hitsexp[0].kb[0] != 0:
+                            if not self.kb_immune:
+                            #RESET KB VEC ROT
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
+                                self.kb_angle = GetAngle(self.hitsexp[0].pos.x, self.hitsexp[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
+                                self.kb_rot = self.kb_angle
+                                self.kb_vel = vec(0, self.hitsexp[0].kb[0])
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot)
+                                self.vel += self.kb_vel
+                                self.stun = self.hitsexp[0].kb[1]
+                                self.collision.move()
 
-        #Explosions
-        if self.exp_immunity == 0:
-            self.hitsexp = pygame.sprite.spritecollide(self.collision, g.explosions, False)
-            if self.hitsexp:
-                if self not in self.hitsexp[0].affected:
-                    if self.hitsexp[0].kb[0] != 0:
-                        #RESET KB VEC ROT
-                        self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
-                        self.kb_angle = GetAngle(self.hitsexp[0].pos.x, self.hitsexp[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
-                        self.kb_rot = self.kb_angle
-                        self.kb_vel = vec(0, self.hitsexp[0].kb[0])
-                        self.kb_vel = self.kb_vel.rotate(self.kb_rot)
-                        self.vel += self.kb_vel
-                        self.hitsexp[0].affected.append(self)
-                        self.health -= self.hitsexp[0].dmg
-                        
-                        self.exp_immunity = self.iframes
-                        self.stun = self.hitsexp[0].kb[1]
-                        self.collision.move()
+                            self.health -= self.hitsexp[0].dmg
+                            self.health = round(self.health)
+                            self.exp_immunity = self.iframes
+                            self.hitsexp[0].affected.append(self)
+                            
 
-        #Projectiles
-        if self.proj_immunity == 0:
-            self.hitsproj = pygame.sprite.spritecollide(self, g.projectiles, False)
-            if self.hitsproj:
-                if self.hitsproj[0].team != self.team:
-                    if self.hitsproj[0].flame and self not in self.hitsproj[0].affected or not self.hitsproj[0].flame:
-                
-                        #RESET KB VEC ROT
-                        self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
-                        self.kb_angle = GetAngle(self.hitsproj[0].pos.x, self.hitsproj[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
-                        self.kb_rot = self.kb_angle
-                        self.kb_vel = vec(0, self.hitsproj[0].kb[0])
-                        self.kb_vel = self.kb_vel.rotate(self.kb_rot)
-                        self.vel += self.kb_vel
-                        
-                        self.proj_immunity = self.iframes
-                        self.stun = self.hitsproj[0].kb[1]
-                        self.collision.move()
-                        self.health -= self.hitsproj[0].dmg
+            #Projectiles
+            if self.proj_immunity == 0:
+                self.hitsproj = pygame.sprite.spritecollide(self, g.projectiles, False)
+                if self.hitsproj:
+                    if self.hitsproj[0].team != self.team:
+                        if self.hitsproj[0].flame and self not in self.hitsproj[0].affected or not self.hitsproj[0].flame:
+                            if not self.kb_immune:
+                                #RESET KB VEC ROT
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
+                                self.kb_angle = GetAngle(self.hitsproj[0].pos.x, self.hitsproj[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
+                                self.kb_rot = self.kb_angle
+                                self.kb_vel = vec(0, self.hitsproj[0].kb[0])
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot)
+                                self.vel += self.kb_vel
+                                self.stun = self.hitsproj[0].kb[1]
+                                self.collision.move()
+                            
+                            self.proj_immunity = self.iframes
+                            self.health -= self.hitsproj[0].dmg
+                            self.health = round(self.health)
 
-                        if not self.hitsproj[0].flame:
-                            if self.hitsproj[0].explosive:
-                                EXPLSN = Explosion(self.hitsproj[0], self.hitsproj[0].explosive[0], self.hitsproj[0].explosive[1], self.hitsproj[0].explosive[2], self.hitsproj[0].explosive[3], self.hitsproj[0].explosive[4],self.hitsproj[0].explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30) 
-                            self.hitsproj[0].kill()
-                        else:
-                            self.hitsproj[0].affected.append(self)
+                            if not self.hitsproj[0].flame:
+                                if self.hitsproj[0].explosive:
+                                    EXPLSN = Explosion(self.hitsproj[0], self.hitsproj[0].explosive[0], self.hitsproj[0].explosive[1], self.hitsproj[0].explosive[2], self.hitsproj[0].explosive[3], self.hitsproj[0].explosive[4],self.hitsproj[0].explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30) 
+                                self.hitsproj[0].kill()
+                            else:
+                                self.hitsproj[0].affected.append(self)
+
+        if self.world_collide:
             
-        self.rect = self.surf.get_rect()
-        self.hitsplatform = pygame.sprite.spritecollide(self.collision, g.platforms, False)
-        self.hitsfloor = pygame.sprite.spritecollide(self.collision, g.floors, False)
-        self.hitswall = pygame.sprite.spritecollide(self.collision, g.walls, False)
-        self.hitsceiling = pygame.sprite.spritecollide(self.collision, g.ceilings, False)
+            self.rect = self.surf.get_rect()
+            self.hitsplatform = pygame.sprite.spritecollide(self.collision, g.platforms, False)
+            self.hitsfloor = pygame.sprite.spritecollide(self.collision, g.floors, False)
+            self.hitswall = pygame.sprite.spritecollide(self.collision, g.walls, False)
+            self.hitsceiling = pygame.sprite.spritecollide(self.collision, g.ceilings, False)
 
-        #numba = 0 i hate this so much
-        self.standing = False
-        self.wall = False
-        self.ceiling = False
-        
-        if self.hitsplatform:
-            if not self.dropping:
-                if self.vel.y > 0:
-                    if self.pos.y < self.hitsplatform[0].rect.bottom:
-                        self.pos.y = self.hitsplatform[0].rect.top + 1 #Using hits[0] checks the first collision in the list that’s returned.
-                        self.vel.y = 0
-                        self.kb_vel.y = 0
-                        self.jumping = False
-                        self.standing = True
-                        self.collision.move()
-
-        if self.hitsfloor:
-            if self.vel.y > 0:
-                self.pos.y = self.hitsfloor[0].rect.top + 1#Using hits[0] checks the first collision in the list that’s returned.
-                self.vel.y = 0
-                self.kb_vel.y = 0
-                self.jumping = False
-                self.standing = True
-                self.collision.move()
-
-        if self.hitsceiling:
-            if self.vel.y < 0:
-                self.pos.y = self.hitsceiling[0].rect.bottom + self.size[1]
-                self.vel.y = 0
-                self.kb_vel.y = 0
-                self.ceiling = True
-                self.collision.move()
-
-        if self.hitswall:
-            #if hitsceiling:
-            #    if hitswall[0].rect.bottom == hitsceiling[0].rect.top:
-            #        if self.rect.top < hitsceiling[0].rect.top:
-            #            numba += 1
-            if self.hitsceiling:
-                if self.hitswall[0].rect.bottom <= self.hitsceiling[0].rect.top:
+            #numba = 0 i hate this so much
+            self.standing = False
+            self.wall = False
+            self.ceiling = False
+            
+            if self.hitsplatform:
+                if not self.dropping:
                     if self.vel.y > 0:
-        
-                        if self.vel.x >= 0:
-                            if self.pos.x < self.hitswall[0].rect.right:
-                                self.pos.x = self.hitswall[0].rect.left - (self.size[0] / 2)
-                                self.vel.x = 0
-                                self.kb_vel.x = 0
-                                self.wall = True
-                                self.collision.move()
-                        if self.vel.x < 0:
-                            if self.pos.x > self.hitswall[0].rect.left:
-                                self.pos.x = self.hitswall[0].rect.right + (self.size[0] / 2)
-                                self.vel.x = 0
-                                self.kb_vel.x = 0
-                                self.wall = True
-                                self.collision.move()
-            else:
-                if self.vel.x >= 0:
-                    if self.pos.x < self.hitswall[0].rect.right:
-                        self.pos.x = self.hitswall[0].rect.left - (self.size[0] / 2)
-                        self.vel.x = 0
-                        self.kb_vel.x = 0
-                        self.wall = True
-                        self.collision.move()
-                if self.vel.x < 0:
-                    if self.pos.x > self.hitswall[0].rect.left:
-                        self.pos.x = self.hitswall[0].rect.right + (self.size[0] / 2)
-                        self.vel.x = 0
-                        self.kb_vel.x = 0
-                        self.wall = True
-                        self.collision.move()
-        
+                        if self.pos.y < self.hitsplatform[0].rect.bottom:
+                            self.pos.y = self.hitsplatform[0].rect.top + 1 #Using hits[0] checks the first collision in the list that’s returned.
+                            self.vel.y = 0
+                            self.kb_vel.y = 0
+                            self.jumping = False
+                            self.standing = True
+                            self.collision.move()
+
+            if self.hitsfloor:
+                if self.vel.y > 0:
+                    self.pos.y = self.hitsfloor[0].rect.top + 1#Using hits[0] checks the first collision in the list that’s returned.
+                    self.vel.y = 0
+                    self.kb_vel.y = 0
+                    self.jumping = False
+                    self.standing = True
+                    self.collision.move()
+
+            if self.hitsceiling:
+                if self.vel.y < 0:
+                    self.pos.y = self.hitsceiling[0].rect.bottom + self.size[1]
+                    self.vel.y = 0
+                    self.kb_vel.y = 0
+                    self.ceiling = True
+                    self.collision.move()
+
+            if self.hitswall:
+                #if hitsceiling:
+                #    if hitswall[0].rect.bottom == hitsceiling[0].rect.top:
+                #        if self.rect.top < hitsceiling[0].rect.top:
+                #            numba += 1
+                if self.hitsceiling:
+                    if self.hitswall[0].rect.bottom <= self.hitsceiling[0].rect.top:
+                        if self.vel.y > 0:
+            
+                            if self.vel.x >= 0:
+                                if self.pos.x < self.hitswall[0].rect.right:
+                                    self.pos.x = self.hitswall[0].rect.left - (self.size[0] / 2)
+                                    self.vel.x = 0
+                                    self.kb_vel.x = 0
+                                    self.wall = True
+                                    self.collision.move()
+                            if self.vel.x < 0:
+                                if self.pos.x > self.hitswall[0].rect.left:
+                                    self.pos.x = self.hitswall[0].rect.right + (self.size[0] / 2)
+                                    self.vel.x = 0
+                                    self.kb_vel.x = 0
+                                    self.wall = True
+                                    self.collision.move()
+                else:
+                    if self.vel.x >= 0:
+                        if self.pos.x < self.hitswall[0].rect.right:
+                            self.pos.x = self.hitswall[0].rect.left - (self.size[0] / 2)
+                            self.vel.x = 0
+                            self.kb_vel.x = 0
+                            self.wall = True
+                            self.collision.move()
+                    if self.vel.x < 0:
+                        if self.pos.x > self.hitswall[0].rect.left:
+                            self.pos.x = self.hitswall[0].rect.right + (self.size[0] / 2)
+                            self.vel.x = 0
+                            self.kb_vel.x = 0
+                            self.wall = True
+                            self.collision.move()
+            
 
         #Autojumping
         if self.jumpprompt == True:
@@ -828,7 +937,256 @@ class Enemy(pygame.sprite.Sprite):
         #if self.firedelay > 0:
         #    self.firedelay -= 1
 
-    
+#Boss enemy TORSO
+class Boss(Enemy):
+    def __init__(self, originxy):
+        Enemy.__init__(self, originxy, size=(500, 500), color=v.ORANGE, speed=0.5, jumpvel=0, gravity=0, health=1000, dmg_mel=5, kb=(20, 20, True), kb_immune=True, world_collide=False, deaggro=0, cycle_len=3000, tag="BOSS", buff="immune")
+        BOSSARM_LEFT = Boss_Arm((0, 0), self, "left")
+        BOSSARM_RIGHT = Boss_Arm((0, 0), self, "right")
+        BOSSHEAD = Boss_Head((0,0), self)
+        BOSSHEALTH_HUD = HUD(self, (1500, 70), v.RED, (240, 25), "boss_health")
+        self.aim = 0
+        self.fric = -0.01
+        self.cycle = 0
+
+    def shoot(self):
+        BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=15, noclip=True)
+
+    def brain(self):
+        if v.BRAIN:
+            if self.cycle < self.cycle_len:
+                self.cycle += 1
+            else:
+                self.cycle = 0
+
+    def aiming(self):
+        for player in g.players:
+            self.aim = GetAngle(self.rect.centerx, self.rect.centery, (player.pos.x + player.vel.x * 20), player.pos.y)
+
+    def move(self):
+        for player in g.players:
+            for center in g.map_center:
+                if v.BRAIN:
+                    
+                    if len(g.boss_limbs) != 0:
+                        # FOLLOWING PLAYER
+                        if self.cycle < 300:
+                            if self.pos.x > player.pos.x: #OPTIMISE
+                                self.acc.x = -self.speed
+                                
+                            else:
+                                self.acc.x = self.speed
+                            # self.fric = -0.01
+
+                        # RETURNING TO MAP CENTER
+                        elif self.cycle < 600:
+                            if self.pos.x - center.rect.centerx > 50:
+                                self.acc.x = -self.speed
+                            elif self.pos.x - center.rect.centerx < -50:
+                                self.acc.x = self.speed
+                            else:
+                                self.pos.x = center.rect.centerx
+                                self.vel.x = 0
+                                self.cycle = 600
+                        
+                        # MOVING AROUND
+                        elif self.cycle < 690:
+                            self.acc.x = -self.speed
+
+                        elif self.cycle < 880:
+                            self.acc.x = self.speed
+
+                        elif self.cycle < 1050:
+                            self.acc.x = -self.speed
+
+                        elif self.cycle < 1350:
+                            if self.pos.x > player.pos.x: #OPTIMISE
+                                self.acc.x = -self.speed
+                                
+                            else:
+                                self.acc.x = self.speed
+
+
+                        elif self.cycle < 1650:
+                            if self.pos.x - center.rect.centerx > 50:
+                                self.acc.x = -self.speed
+                            elif self.pos.x - center.rect.centerx < -50:
+                                self.acc.x = self.speed
+                            else:
+                                self.pos.x = center.rect.centerx
+                                self.vel.x = 0
+                                self.cycle = 1650
+
+                        elif self.cycle < 2010:
+                            self.vel.x = 0
+
+                        else:
+                            self.cycle = 0
+
+                    else:
+                        if self.pos.x > player.pos.x: #OPTIMISE
+                            self.acc.x = -self.speed
+                            
+                        else:
+                            self.acc.x = self.speed
+
+                        if self.cycle > 60:
+                            self.cycle = 0
+
+                        if self.cycle == 30:
+                            self.aiming()
+                            self.buff = None
+
+                        if self.cycle > 30:
+                            self.shoot()
+
+
+            self.acc.x += self.vel.x * self.fric
+            
+            self.vel += self.acc
+            self.pos += round(self.vel) #+ 0.5 * self.acc)
+
+            if self.vel.x > -0.1 and self.vel.x < 0.1:
+                self.vel.x = 0
+
+            self.rect.midbottom = self.pos
+            self.currentpos = vec(self.pos)
+
+#Boss enemy arm
+class Boss_Arm(Enemy):
+    def __init__(self, originxy, target, facing="left"):
+        Enemy.__init__(self, originxy, world_collide=False, size=(70, 300), color=v.TITLEGREEN, gravity=0, jumpvel=0, health=1000, kb=(5, 30, False))
+        self.target = target
+        g.boss_limbs.add(self)
+        self.facing = facing
+
+    def move(self):
+        if self.facing == "left":
+            self.margin = (-500, 0)
+        elif self.facing == "right":
+            self.margin = (500, 0)
+        else:
+            self.margin = (0, 0)
+        self.pos = self.target.pos + self.margin
+        self.rect.midbottom  = self.pos
+
+    def brain(self):
+        if self.target.cycle < 600:
+            pass
+
+        elif self.target.cycle < 1050:
+            if self.target.cycle % 15 == 0:
+                self.shoot()
+
+        elif self.target.cycle < 1650:
+            pass
+
+        elif self.target.cycle < 2010:
+            if self.target.cycle % 30 == 0:
+                    self.aiming("bottom")
+                    self.shoot(1, "bottom")
+
+                    self.aiming("top")
+                    self.shoot(1, "top")
+
+    def aiming(self, origin):
+        self.origin = self.rect.centery
+
+        if origin == "top":
+            self.origin = self.pos.y - self.size[1]
+
+        if origin == "bottom":
+            self.origin = self.pos.y
+
+        for player in g.players:
+            self.aim = GetAngle(self.pos.x, self.origin, player.pos.x, player.pos.y)
+
+        
+
+    def shoot(self, type=None, origin=None):
+    #     BOSSMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True, originxy=(self.rect.midbottom))
+    #     BOSSMAGIC = Projectile((50, 50), v.PURPLE, (0, 1), None, self.aim+180, (0, 10), 30, None, 180, self, 0, (10, 10),dmg=15, noclip=True, originxy=(self.rect.midtop))
+        if type == None:
+            BOSSBOMB = Projectile((75, 75), v.YELLOW, None, (0, v.GRAVITY), 180, (0, 20), None, None, 180, self, 0, (10, 30), explosive=(50, 200, 30, 30, 50, 30), originxy=self.rect.midtop, dmg=30)
+        else:
+            if origin == None:
+                BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
+            elif origin == "top":
+                BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midtop)
+            elif origin == "bottom":
+                BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midbottom)
+
+
+class Boss_Head(Enemy):
+    def __init__(self, originxy, target):
+        Enemy.__init__(self, originxy, world_collide=False, size=(100, 100), color=v.BLUE, gravity=0, jumpvel=0, speed=0, health=1000)
+        self.target = target
+        g.boss_limbs.add(self)
+
+    def move(self):
+        self.margin = (0, -self.target.size[1]-0)
+        self.pos = self.target.pos + self.margin
+        self.rect.midbottom = self.pos
+
+    def brain(self):
+        if not v.DEAD:
+            if self.target.cycle < 120:
+                pass
+
+            elif self.target.cycle == 120:
+                self.aiming()
+
+            elif self.target.cycle < 150:
+                self.shoot()
+
+            elif self.target.cycle < 240:
+                pass
+
+            elif self.target.cycle == 240:
+                self.aiming()
+
+            elif self.target.cycle < 270:
+                self.shoot()
+
+            elif self.target.cycle < 1050:
+                pass
+
+            elif self.target.cycle < 1170:
+                pass
+
+            elif self.target.cycle == 1170:
+                self.aiming()
+
+            elif self.target.cycle < 1200:
+                self.shoot()
+
+            elif self.target.cycle < 1290:
+                pass
+
+            elif self.target.cycle == 1290:
+                self.aiming()
+
+            elif self.target.cycle < 1320:
+                self.shoot()
+
+            elif self.target.cycle < 1650:
+                pass
+
+            elif self.target.cycle < 2010:
+                if self.target.cycle % 30 == 0:
+                    self.aiming()
+                    self.shoot(1)
+
+
+    def shoot(self, type=None):
+        if type == None:
+            BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=20, noclip=True)
+        else:
+            BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
+
+    def aiming(self):
+        for player in g.players:
+            self.aim = GetAngle(self.pos.x, self.pos.y, (player.pos.x + player.vel.x * 20), player.pos.y)
 
 #Scrollable map objects
 class MapObject(pygame.sprite.Sprite):
@@ -885,13 +1243,17 @@ class MapText(pygame.sprite.Sprite):
 
 #Projectile class?
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, size, color, acc, gravity, rot, vel, maxvel, inherit, life, shooter, firerate, kb, cost=20 ,dmg=1, flame=False, explosive=False, noclip=False):
+    def __init__(self, size, color, acc, gravity, rot, vel, maxvel, inherit, life, shooter, firerate, kb, cost=20 ,dmg=1, flame=False, explosive=False, noclip=False, originxy=None):
         super().__init__()
         self.size = vec(size)
         self.surf = pygame.Surface(self.size)
         self.color = vec3(color)
         self.surf.fill(color)
-        self.rect = self.surf.get_rect(center = (shooter.pos.x, shooter.pos.y - shooter.size[1]/2))
+        if originxy == None:
+            self.originxy = (shooter.pos.x, shooter.pos.y - shooter.size[1]/2)
+        else:
+            self.originxy = originxy
+        self.rect = self.surf.get_rect(center = self.originxy)
         if acc != None:
             self.acc = vec(acc)
         else:
