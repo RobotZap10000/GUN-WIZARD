@@ -18,6 +18,8 @@ vec = pygame.math.Vector2 #2 = 2D
 #Starting map
 def StartMap():
 
+    func.PlayMusic("notmymusic2.wav")
+
     # # LEGACY LEVEL
     # #New method of classes cls.MapObject(size, color, originxy, group)
     # #ADD IN DRAW ORDER FROM BACKGROUND TO FOREGROUND

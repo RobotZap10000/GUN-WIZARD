@@ -18,6 +18,8 @@ vec = pygame.math.Vector2 #2 = 2D
 #Starting map
 def StartMap():
 
+    pygame.mixer.music.stop()
+
     # # LEGACY LEVEL
     # #New method of classes cls.MapObject(size, color, originxy, group)
     # #ADD IN DRAW ORDER FROM BACKGROUND TO FOREGROUND
@@ -74,6 +76,7 @@ def StartMap():
     POWERUP = cls.Enemy((-830, 715), size=(70, 70), color=v.BLUE, gravity=0, ai=2, dmg_mel = -100, flag="dont_count", kb_immune=True, kb=(0, 0, False))
     TRG1 = cls.MapObject((70, 70), v.ORANGE, (-830, 680), (g.world_objects, g.debug, g.triggers))
     TRG1.function = func.Cutscene
+    TRG1.function_param = 0
     TRG1.surf.set_alpha(128)
 
     #Boss
@@ -82,7 +85,7 @@ def StartMap():
     
 
     # #Player
-    P1 = cls.Player(vic_cond="NME_KILLED", spawn=(v.WIDTH/2, 800))
+    P1 = cls.Player(spawn=(v.WIDTH/2, 800))
 
      # LEGACY LEVEL LIMITS
     CENTER = cls.MapObject((30, 30), v.MAGENTA, (-830, 2875), (g.debug, g.world_objects, g.map_center))

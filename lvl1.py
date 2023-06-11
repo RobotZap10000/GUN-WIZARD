@@ -61,6 +61,9 @@ vec = pygame.math.Vector2 #2 = 2D
 
 #Starting map NEW
 def StartMap():
+
+    func.PlayMusic("notmymusic3.wav")
+
     #Bounding area
     CLN1 = cls.MapObject((4100, 150), v.RED, (2000, 0), (g.ceilings, g.world_objects, g.proj_collidables))
     WALL1 = cls.MapObject((500, 5200), v.RED, (0, 2000), (g.walls, g.world_objects, g.proj_collidables))
@@ -168,6 +171,7 @@ def StartMap():
     TRG1 = cls.MapObject((200, 175), v.ORANGE, (500, 4350), (g.world_objects, g.debug, g.triggers))
     TRG1.function = func.Victory
     TRG1.surf.set_alpha(128)
+    TRG1.function_param = None
 
     if v.DEBUG:
         for debug in g.debug:

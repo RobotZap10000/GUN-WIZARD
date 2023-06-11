@@ -7,6 +7,7 @@ import groups as g
 import functions as func
 import texts as txt
 from math import atan2, degrees
+import random
 
 #initializing
 pygame.init()
@@ -130,7 +131,7 @@ class HUD(pygame.sprite.Sprite):
             self.totalhealth = self.target.health
             self.totalhealth += sum(limb.health for limb in g.boss_limbs)
             #CHANGE BAR LENGTH
-            if self.target.health > 0:
+            if self.totalhealth > 0:
                 self.surf = pygame.Surface((self.size[0]*(self.totalhealth / 4000), self.size[1]))
             else:
                 self.surf = pygame.Surface((0, self.size[1]))
@@ -439,7 +440,10 @@ class Player(pygame.sprite.Sprite):
                 self.collision.move()
 
         if self.hitstrg:
-            self.hitstrg[0].function()
+            if self.hitstrg[0].function_param != None:
+                self.hitstrg[0].function(self.hitstrg[0].function_param)
+            else:
+                self.hitstrg[0].function()
             self.hitstrg[0].kill()
         
 
@@ -727,42 +731,50 @@ class Enemy(pygame.sprite.Sprite):
     #Enemy collision
     def update(self):
 
-        if self.health <= 0:
-            self.health = 0
-            for player in g.players:
-                healthdrop = False
-
-                if self not in g.boss_limbs:
-                    if player.health < 100:
-                        rng = random.randint(0, 1)
-                        if rng == 0: 
-                            healthdrop = True
-                    if player.health <= 50:
-                        healthdrop = True
-                else:
-                    healthdrop = True
-                
-                if healthdrop:
-                    HEALTHPACK = Enemy(self.pos, size=(50, 50), color=v.HEALTHGREEN, health=999, ai=2, dmg_mel=-30, kb=(0, 0, False), flag="dont_count")
-            self.collision.kill()
-            if self.tag != None:
-                for limb in g.boss_limbs:
-                    limb.collision.kill()
-                    limb.kill()
-            for hud in self.huds:
-                hud.kill()
-            if self.target != None:
-                self.target.limbs.remove(self)
-            self.kill()
+        
             
-            self.deathcounting = 0
-            for entity in g.enemies:
-                if entity.flag == "count_death":
-                    self.deathcounting += 1
-            if self.deathcounting == 0:
+        if self.health <= 0:
+            if self.tag == "BOSS":
+                if not v.CUTSCENE:
+                    self.health = 0
+                    func.Cutscene(1)
+
+            else:
+                self.health = 0
                 for player in g.players:
-                    if player.vic_cond == "NME_KILLED":
-                        func.Victory()
+                    healthdrop = False
+
+                    if self not in g.boss_limbs:
+                        if player.health < 100:
+                            rng = random.randint(0, 1)
+                            if rng == 0: 
+                                healthdrop = True
+                        if player.health <= 50:
+                            healthdrop = True
+                    else:
+                        healthdrop = True
+                    
+                    if healthdrop:
+                        HEALTHPACK = Enemy(self.pos, size=(50, 50), color=v.HEALTHGREEN, health=999, ai=2, dmg_mel=-30, kb=(0, 0, False), flag="dont_count")
+                self.collision.kill()
+                if self.tag != None:
+                    for limb in g.boss_limbs:
+                        limb.collision.kill()
+                        limb.kill()
+                for hud in self.huds:
+                    hud.kill()
+                if self.target != None:
+                    self.target.limbs.remove(self)
+                self.kill()
+                
+                self.deathcounting = 0
+                for entity in g.enemies:
+                    if entity.flag == "count_death":
+                        self.deathcounting += 1
+                if self.deathcounting == 0:
+                    for player in g.players:
+                        if player.vic_cond == "NME_KILLED":
+                            func.Victory()
             
 
         if self.proj_immunity > 0:
@@ -945,6 +957,7 @@ class Boss(Enemy):
         BOSSARM_RIGHT = Boss_Arm((0, 0), self, "right")
         BOSSHEAD = Boss_Head((0,0), self)
         BOSSHEALTH_HUD = HUD(self, (1500, 70), v.RED, (240, 25), "boss_health")
+        self.shake = vec(0, 0)
         self.aim = 0
         self.fric = -0.01
         self.cycle = 0
@@ -953,104 +966,125 @@ class Boss(Enemy):
         BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=15, noclip=True)
 
     def brain(self):
-        if v.BRAIN:
-            if self.cycle < self.cycle_len:
-                self.cycle += 1
-            else:
-                self.cycle = 0
+        if self.health != 0:
+            if v.BRAIN:
+                if self.cycle < self.cycle_len:
+                    self.cycle += 1
+                else:
+                    self.cycle = 0
 
     def aiming(self):
         for player in g.players:
             self.aim = GetAngle(self.rect.centerx, self.rect.centery, (player.pos.x + player.vel.x * 20), player.pos.y)
 
     def move(self):
+        
         for player in g.players:
             for center in g.map_center:
                 if v.BRAIN:
-                    
-                    if len(g.boss_limbs) != 0:
-                        # FOLLOWING PLAYER
-                        if self.cycle < 300:
-                            if self.pos.x > player.pos.x: #OPTIMISE
-                                self.acc.x = -self.speed
-                                
-                            else:
-                                self.acc.x = self.speed
-                            # self.fric = -0.01
+                    if self.health != 0:
+                        if len(g.boss_limbs) != 0:
+                            # FOLLOWING PLAYER
+                            if self.cycle < 300:
+                                if self.pos.x > player.pos.x: #OPTIMISE
+                                    self.acc.x = -self.speed
+                                    
+                                else:
+                                    self.acc.x = self.speed
+                                # self.fric = -0.01
 
-                        # RETURNING TO MAP CENTER
-                        elif self.cycle < 600:
-                            if self.pos.x - center.rect.centerx > 50:
-                                self.acc.x = -self.speed
-                            elif self.pos.x - center.rect.centerx < -50:
-                                self.acc.x = self.speed
-                            else:
-                                self.pos.x = center.rect.centerx
-                                self.vel.x = 0
-                                self.cycle = 600
-                        
-                        # MOVING AROUND
-                        elif self.cycle < 690:
-                            self.acc.x = -self.speed
-
-                        elif self.cycle < 880:
-                            self.acc.x = self.speed
-
-                        elif self.cycle < 1050:
-                            self.acc.x = -self.speed
-
-                        elif self.cycle < 1350:
-                            if self.pos.x > player.pos.x: #OPTIMISE
-                                self.acc.x = -self.speed
-                                
-                            else:
-                                self.acc.x = self.speed
-
-
-                        elif self.cycle < 1650:
-                            if self.pos.x - center.rect.centerx > 50:
-                                self.acc.x = -self.speed
-                            elif self.pos.x - center.rect.centerx < -50:
-                                self.acc.x = self.speed
-                            else:
-                                self.pos.x = center.rect.centerx
-                                self.vel.x = 0
-                                self.cycle = 1650
-
-                        elif self.cycle < 2010:
-                            self.vel.x = 0
-
-                        else:
-                            self.cycle = 0
-
-                    else:
-                        if self.pos.x > player.pos.x: #OPTIMISE
-                            self.acc.x = -self.speed
+                            # RETURNING TO MAP CENTER
+                            elif self.cycle < 600:
+                                if self.pos.x - center.rect.centerx > 50:
+                                    self.acc.x = -self.speed
+                                elif self.pos.x - center.rect.centerx < -50:
+                                    self.acc.x = self.speed
+                                else:
+                                    self.pos.x = center.rect.centerx
+                                    self.vel.x = 0
+                                    self.cycle = 600
                             
+                            # MOVING AROUND
+                            elif self.cycle < 690:
+                                self.acc.x = -self.speed
+
+                            elif self.cycle < 880:
+                                self.acc.x = self.speed
+
+                            elif self.cycle < 1050:
+                                self.acc.x = -self.speed
+
+                            elif self.cycle < 1350:
+                                if self.pos.x > player.pos.x: #OPTIMISE
+                                    self.acc.x = -self.speed
+                                    
+                                else:
+                                    self.acc.x = self.speed
+
+
+                            elif self.cycle < 1650:
+                                if self.pos.x - center.rect.centerx > 50:
+                                    self.acc.x = -self.speed
+                                elif self.pos.x - center.rect.centerx < -50:
+                                    self.acc.x = self.speed
+                                else:
+                                    self.pos.x = center.rect.centerx
+                                    self.vel.x = 0
+                                    self.cycle = 1650
+
+                            elif self.cycle < 2010:
+                                self.vel.x = 0
+
+                            else:
+                                self.cycle = 0
+
                         else:
-                            self.acc.x = self.speed
+                            if self.pos.x > player.pos.x: #OPTIMISE
+                                self.acc.x = -self.speed
+                                
+                            else:
+                                self.acc.x = self.speed
 
-                        if self.cycle > 60:
-                            self.cycle = 0
+                            if self.cycle > 60:
+                                self.cycle = 0
 
-                        if self.cycle == 30:
-                            self.aiming()
-                            self.buff = None
+                            if self.cycle == 30:
+                                self.aiming()
+                                self.buff = None
 
-                        if self.cycle > 30:
-                            self.shoot()
+                            if self.cycle > 30:
+                                self.shoot()
+                    else:
+                        if v.CUTSCENE_TIME > 570:
+                            self.shakevalue = 5
+                        else:
+                            self.shakevalue = 20
+                            if v.CUTSCENE_TIME % 2 == 0:
+                                BOSSEXPLOSION = Explosion(self, dmg=0, kb=0, stun=0, cutscene=True)
+                        self.pos -= self.shake
+                        self.shake = vec(random.randint(-self.shakevalue, self.shakevalue), random.randint(-self.shakevalue, self.shakevalue))
+                        self.pos += self.shake
+                        self.acc = vec(0, 0)
+                        self.vel = vec(0, 0)
 
 
-            self.acc.x += self.vel.x * self.fric
-            
-            self.vel += self.acc
-            self.pos += round(self.vel) #+ 0.5 * self.acc)
 
-            if self.vel.x > -0.1 and self.vel.x < 0.1:
-                self.vel.x = 0
+                self.acc.x += self.vel.x * self.fric
+                
+                self.vel += self.acc
+                self.pos += round(self.vel) #+ 0.5 * self.acc)
 
-            self.rect.midbottom = self.pos
-            self.currentpos = vec(self.pos)
+                if self.vel.x > -0.1 and self.vel.x < 0.1:
+                    self.vel.x = 0
+
+                self.rect.midbottom = self.pos
+                self.currentpos = vec(self.pos)
+
+    def explode(self):
+        FINALEXP = Explosion(self, size=500, maxsize=750, life=60, dmg=0, kb=0, stun=0, color=v.YELLOW)
+        for f in g.focus:
+            f.target = FINALEXP
+
 
 #Boss enemy arm
 class Boss_Arm(Enemy):
@@ -1362,14 +1396,19 @@ class Projectile(pygame.sprite.Sprite):
 
 
 class Explosion(pygame.sprite.Sprite):
-    def __init__(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30):
+    def __init__(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30, cutscene=False, color=v.ORANGE):
         super().__init__()
         self.target = target
         self.size = vec(size, size)
         self.maxsize = vec(maxsize, maxsize)
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.ORANGE)
-        self.rect = self.surf.get_rect(center = self.target.rect.center)
+        if cutscene == False:
+            self.rect = self.surf.get_rect(center = self.target.rect.center)
+            self.color = color
+        else:
+            self.rect = self.surf.get_rect(center = vec(self.target.rect.center) + vec(random.randint(-250, 250), random.randint(-250, 250))) 
+            self.color = v.YELLOW
+        self.surf.fill(self.color)
         self.pos = vec(self.rect.center)
         self.life = life
         self.lifeleft = self.life
@@ -1390,7 +1429,7 @@ class Explosion(pygame.sprite.Sprite):
         #self.size += vec(100, 100)/self.life
         self.size += (self.maxsize - self.size)/2 * 0.2
         self.surf = pygame.Surface(self.size)
-        self.surf.fill(v.ORANGE)
+        self.surf.fill(self.color)
         self.rect = self.surf.get_rect(center = self.rect.center)
         self.alpha = 255 /self.life*self.lifeleft
         self.surf.set_alpha(self.alpha)
