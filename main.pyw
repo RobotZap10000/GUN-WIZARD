@@ -112,26 +112,6 @@ while True:
 
                         if event.key == pygame.K_s:
                                 player.dropping = True
-
-                    for nme in g.enemies:
-                        if event.key == pygame.K_h:
-                                nme.dropping = True
-
-                        if event.key == pygame.K_y:
-                                nme.jumpprompt = True
-                    
-                #debugging
-                if event.key == pygame.K_c:
-                    # v.FPS = 2
-                    pass                        #Use this if nothing needed
-
-                #debugging
-                if event.key == pygame.K_v:
-                    # v.FPS = 60
-                    pass
-
-                if event.key == pygame.K_b:
-                    v.BRAIN = not v.BRAIN
                 
                 #debug menu
                 if event.key == pygame.K_i:
@@ -167,14 +147,6 @@ while True:
                                 player.cancel_jump()
                         if event.key == pygame.K_s:
                                 player.dropping = False
-
-                for nme in g.enemies:
-                    if event.key == pygame.K_y:
-                            nme.jumpprompt = False
-                            nme.cancel_jump()
-
-                    if event.key == pygame.K_h:
-                            nme.dropping = False
 
         if v.PAUSED == False:
 

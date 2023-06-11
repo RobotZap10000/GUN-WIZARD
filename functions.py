@@ -16,10 +16,11 @@ MUSIC_END = pygame.USEREVENT+1
 
 #Playing music
 def PlayMusic(music):
-    if v.MUSIC != music:
-        v.MUSIC = music
-        pygame.mixer.music.load(v.MUSIC)
-        pygame.mixer.music.play(-1)
+    if v.MUSIC_ENABLED:
+        if v.MUSIC != music:
+            v.MUSIC = music
+            pygame.mixer.music.load(v.MUSIC)
+            pygame.mixer.music.play(-1)
 
 #Quitting game
 def QuitGame():
@@ -154,10 +155,11 @@ def ToggleControls():
             player.dropping = False
 
 def Victory():
-    pygame.mixer.music.stop()
-    v.MUSIC = "notmymusic5.wav"
-    pygame.mixer.music.load(v.MUSIC)
-    pygame.mixer.music.play(1)
+    if v.MUSIC_ENABLED:
+        pygame.mixer.music.stop()
+        v.MUSIC = "notmymusic5.wav"
+        pygame.mixer.music.load(v.MUSIC)
+        pygame.mixer.music.play(1)
     ToggleControls()
     v.VICTORY = True
 
@@ -165,7 +167,8 @@ def VictoryCheck():
     if v.VICTORY:
         v.VICTORY_TIME -= 1
         if v.VICTORY_TIME <= 0:
-            pygame.mixer.music.stop()
+            if v.MUSIC_ENABLED:
+                pygame.mixer.music.stop()
             v.LEVEL += 1
             v.VICTORY = False
             v.VICTORY_TIME = v.VICTORY_DUR
@@ -176,11 +179,12 @@ def VictoryCheck():
 
 def Cutscene(type):
     if type == 0:
-        v.MUSIC = "notmymusic4.1.wav"
-        pygame.mixer.music.load(v.MUSIC)
-        pygame.mixer.music.play(1)
+        if v.MUSIC_ENABLED:
+            v.MUSIC = "notmymusic4.1.wav"
+            pygame.mixer.music.load(v.MUSIC)
+            pygame.mixer.music.play(1)
+            pygame.mixer.music.set_endevent(MUSIC_END)
         ToggleControls()
-        pygame.mixer.music.set_endevent(MUSIC_END)
         v.CUTSCENE = True
         for player in g.players:
             player.buff = "manaboost"
@@ -188,9 +192,10 @@ def Cutscene(type):
             g.floors.remove(prop)
 
     if type == 1:
-        v.MUSIC = "notmymusic4.3.wav"
-        pygame.mixer.music.load(v.MUSIC)
-        pygame.mixer.music.play(1)
+        if v.MUSIC_ENABLED:
+            v.MUSIC = "notmymusic4.3.wav"
+            pygame.mixer.music.load(v.MUSIC)
+            pygame.mixer.music.play(1)
         ToggleControls()
         v.CUTSCENE = True
         for focus in g.focus:
@@ -212,7 +217,8 @@ def CutsceneCheck():
                 PlayMusic("notmymusic4.2.wav")
                 for player in g.players:
                     player.spawnboss()
-                pygame.mixer.music.set_endevent(MUSIC_END)
+                if v.MUSIC_ENABLED:
+                    pygame.mixer.music.set_endevent(MUSIC_END)
 
         if v.CUTSCENE_TYPE == 1:
             if v.CUTSCENE_TIME == 330:
@@ -248,7 +254,8 @@ def ForceCutscene():
         PlayMusic("notmymusic4.2.wav")
         for player in g.players:
             player.spawnboss()
-        pygame.mixer.music.set_endevent()
+        if v.MUSIC_ENABLED:
+            pygame.mixer.music.set_endevent()
 
 
             

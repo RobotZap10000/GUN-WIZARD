@@ -17,8 +17,8 @@ vec = pygame.math.Vector2 #2 = 2D
 
 #Starting map
 def StartMap():
-
-    pygame.mixer.music.stop()
+    if v.MUSIC_ENABLED:
+        pygame.mixer.music.stop()
 
     # # LEGACY LEVEL
     # #New method of classes cls.MapObject(size, color, originxy, group)
