@@ -19,6 +19,7 @@ floors = pygame.sprite.Group()
 walls = pygame.sprite.Group()
 ceilings = pygame.sprite.Group()
 triggers = pygame.sprite.Group()
+props = pygame.sprite.Group()
 
 #Projectile groups
 projectiles = pygame.sprite.Group()
@@ -29,6 +30,7 @@ explosions = pygame.sprite.Group()
 
 #Enemy groups
 enemies = pygame.sprite.Group()
+boss_limbs = pygame.sprite.Group()
 
 #Knockback groups
 knockback = pygame.sprite.Group()

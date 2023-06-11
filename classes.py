@@ -99,13 +99,22 @@ class HUD(pygame.sprite.Sprite):
         
         if self.unit == "player_weapon":
             if self.target.weapon == 1:
-                self.color = v.GREEN
+                if self.target.buff == "manaboost":
+                    self.color = v.PURPLE
+                else:
+                    self.color = v.GREEN
                 self.text = txt.Text(txt.font_lvlselect, "MAGIC", v.BLACK, self.rect.center)
             elif self.target.weapon == 2:
-                self.color = v.RED
+                if self.target.buff == "manaboost":
+                    self.color = v.BLUE
+                else:
+                    self.color = v.RED
                 self.text = txt.Text(txt.font_lvlselect, "FLAME", v.BLACK, self.rect.center)
             elif self.target.weapon == 3:
-                self.color = v.YELLOW
+                if self.target.buff == "manaboost":
+                    self.color = v.ORANGE
+                else:
+                    self.color = v.YELLOW
                 self.text = txt.Text(txt.font_lvlselect, "BOMB", v.BLACK, self.rect.center)
             else:
                 self.color = v.MAGENTA
@@ -118,18 +127,23 @@ class HUD(pygame.sprite.Sprite):
                 self.surf.set_alpha(255)
 
         if self.unit == "boss_health":
+            self.totalhealth = self.target.health
+            self.totalhealth += sum(limb.health for limb in g.boss_limbs)
             #CHANGE BAR LENGTH
             if self.target.health > 0:
-                self.surf = pygame.Surface((self.size[0]*(self.target.health / self.target.maxhealth), self.size[1]))
+                self.surf = pygame.Surface((self.size[0]*(self.totalhealth / 4000), self.size[1]))
             else:
                 self.surf = pygame.Surface((0, self.size[1]))
                 self.target.health = 0
             self.surf.fill(self.color)
             self.rect = self.surf.get_rect(topleft = self.originxy)
-            self.symbol = txt.Text(txt.font_icon, "☠ ", v.RED, (0, 0))
-            self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
-            self.text = txt.Text(txt.font_lvlselect, str(self.target.health), v.RED, (0, 0))
-            self.text.rect.midleft = self.symbol.rect.midright
+            self.symbol = txt.Text(txt.font_icon, "☠ ", v.WHITE, (0, 0))
+            # self.symbol.rect.midleft = (self.originxy[0] + 25, self.originxy[1] + self.size[1]/2)
+            # self.text = txt.Text(txt.font_lvlselect, str(self.totalhealth), v.WHITE, (0, 0))
+            self.text = txt.Text(txt.font_lvlselect, "BOSS", v.WHITE, (0, 0))
+            self.text.rect.center = self.background_rect.center
+            self.symbol.rect.midright = self.text.rect.midleft
+            # self.text.rect.midleft = self.symbol.rect.midright
         
         self.build_background(20)
 
@@ -484,22 +498,37 @@ class Player(pygame.sprite.Sprite):
             #(self, size, color, acc, graviwty, rot, vel, maxvel, inherit, life, shooter, firerate, knockback, flame)
         
             if self.weapon == 1:
-                if self.mana >= 6: 
+                if self.buff == "manaboost":
+                    PLAYERMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 40), None, None, 180, self, 8, (2, 10), cost=0, dmg=6)
+                    self.lastfired = 0
+
+                elif self.mana >= 6: 
                     PLAYERMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), cost=6, dmg=6)
                     self.lastfired = 0
 
             if self.weapon == 2:
-                if self.mana >= 0.6:
+                if self.buff == "manaboost":
+                    PLAYERFLAME = Projectile((30, 30), v.BLUE, None, (0, -0.1), self.aim, (0, 20), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0, dmg=10, flame=True)
+                    PLAYERFLAME = Projectile((30, 30), v.BLUE, None, (0, -0.1), self.aim + 20, (0, 20), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0, dmg=10, flame=True)
+                    PLAYERFLAME = Projectile((30, 30), v.BLUE, None, (0, -0.1), self.aim - 20, (0, 20), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=0, dmg=10, flame=True)
+                    self.lastfired = 0
+                elif self.mana >= 0.6:
                     PLAYERFLAME = Projectile((30, 30), v.RED, None, (0, -0.1), self.aim + (random.randint(-4, 4)), (0, 10), None, (self.vel.x*1.5, self.vel.y), 30, self, 3, (0, 0), cost=3, dmg=6, flame=True)
                     self.lastfired = 0
 
             if self.weapon == 3:
-                if self.mana >= 40:
-                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 20, (5, 0), cost=40, dmg=10, explosive=(50, 150, 30, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
-                    
+                if self.buff == "manaboost":
+                    PLAYERBOMB = Projectile((80, 80), v.ORANGE, None, (0, 1), self.aim, (0, 20), None, self.vel, 30, self, 60, (5, 0), cost=0, dmg=10, explosive=(100, 400, 60, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
                     self.lastfired = 0
 
-        
+                elif self.mana >= 40:
+                    PLAYERBOMB = Projectile((50, 50), v.YELLOW, None, (0, 1), self.aim, (0, 20), None, self.vel, 120, self, 20, (5, 0), cost=40, dmg=10, explosive=(50, 150, 30, 20, 40, 30)) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30)
+                    self.lastfired = 0
+
+    def spawnboss(self):
+        for center in g.map_center:
+            boss_spawn = vec(center.rect.center) - (0, 225)
+        BOSS = Boss(boss_spawn)
                 
     
 #Player collision shadow:
@@ -540,7 +569,7 @@ class Collision_Shadow(pygame.sprite.Sprite):
 
 #Basic enemy
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20, kb=(10, 20, True), team="enemy", flag="count_death", kb_immune=False, world_collide=True, cycle_len=240):
+    def __init__(self, originxy, size=(70,120), color=v.MAGENTA, speed=v.ACC*0.8, jumpvel=v.JUMPVEL*0.9, gravity=v.GRAVITY, health=60, ai=0, aggro=1000, deaggro=2000, dmg_mel=20, kb=(10, 20, True), team="enemy", flag="count_death", kb_immune=False, world_collide=True, cycle_len=240, tag=None, buff=None):
         super().__init__()
         self.size = size
         self.color = color
@@ -571,9 +600,11 @@ class Enemy(pygame.sprite.Sprite):
         self.flag = flag
         self.kb_immune = kb_immune
         self.world_collide = world_collide
-        self.limbs = []
+        self.limbs = pygame.sprite.Group()
         self.huds = []
         self.target = None
+        self.tag = tag
+        self.buff = buff
         g.all_sprites.add(self)
         g.world_objects.add(self)
         g.enemies.add(self)
@@ -700,19 +731,24 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 0
             for player in g.players:
                 healthdrop = False
-                if player.health < 100:
-                    rng = random.randint(0, 1)
-                    if rng == 0: 
+
+                if self not in g.boss_limbs:
+                    if player.health < 100:
+                        rng = random.randint(0, 1)
+                        if rng == 0: 
+                            healthdrop = True
+                    if player.health <= 50:
                         healthdrop = True
-                if player.health <= 50:
+                else:
                     healthdrop = True
                 
                 if healthdrop:
                     HEALTHPACK = Enemy(self.pos, size=(50, 50), color=v.HEALTHGREEN, health=999, ai=2, dmg_mel=-30, kb=(0, 0, False), flag="dont_count")
             self.collision.kill()
-            for limb in self.limbs:
-                limb.collision.kill()
-                limb.kill()
+            if self.tag != None:
+                for limb in g.boss_limbs:
+                    limb.collision.kill()
+                    limb.kill()
             for hud in self.huds:
                 hud.kill()
             if self.target != None:
@@ -743,57 +779,57 @@ class Enemy(pygame.sprite.Sprite):
         #if TICK > 0:
 
         #Self damage
-
-        #Explosions
-        if self.exp_immunity == 0:
-            self.hitsexp = pygame.sprite.spritecollide(self.collision, g.explosions, False)
-            if self.hitsexp:
-                if self not in self.hitsexp[0].affected:
-                    if self.hitsexp[0].kb[0] != 0:
-                        if not self.kb_immune:
-                        #RESET KB VEC ROT
-                            self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
-                            self.kb_angle = GetAngle(self.hitsexp[0].pos.x, self.hitsexp[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
-                            self.kb_rot = self.kb_angle
-                            self.kb_vel = vec(0, self.hitsexp[0].kb[0])
-                            self.kb_vel = self.kb_vel.rotate(self.kb_rot)
-                            self.vel += self.kb_vel
-                            self.stun = self.hitsexp[0].kb[1]
-                            self.collision.move()
-
-                        self.health -= self.hitsexp[0].dmg
-                        self.health = round(self.health)
-                        self.exp_immunity = self.iframes
-                        self.hitsexp[0].affected.append(self)
-                        
-
-        #Projectiles
-        if self.proj_immunity == 0:
-            self.hitsproj = pygame.sprite.spritecollide(self, g.projectiles, False)
-            if self.hitsproj:
-                if self.hitsproj[0].team != self.team:
-                    if self.hitsproj[0].flame and self not in self.hitsproj[0].affected or not self.hitsproj[0].flame:
-                        if not self.kb_immune:
+        if self.buff == None:
+            #Explosions
+            if self.exp_immunity == 0:
+                self.hitsexp = pygame.sprite.spritecollide(self.collision, g.explosions, False)
+                if self.hitsexp:
+                    if self not in self.hitsexp[0].affected:
+                        if self.hitsexp[0].kb[0] != 0:
+                            if not self.kb_immune:
                             #RESET KB VEC ROT
-                            self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
-                            self.kb_angle = GetAngle(self.hitsproj[0].pos.x, self.hitsproj[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
-                            self.kb_rot = self.kb_angle
-                            self.kb_vel = vec(0, self.hitsproj[0].kb[0])
-                            self.kb_vel = self.kb_vel.rotate(self.kb_rot)
-                            self.vel += self.kb_vel
-                            self.stun = self.hitsproj[0].kb[1]
-                            self.collision.move()
-                        
-                        self.proj_immunity = self.iframes
-                        self.health -= self.hitsproj[0].dmg
-                        self.health = round(self.health)
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
+                                self.kb_angle = GetAngle(self.hitsexp[0].pos.x, self.hitsexp[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
+                                self.kb_rot = self.kb_angle
+                                self.kb_vel = vec(0, self.hitsexp[0].kb[0])
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot)
+                                self.vel += self.kb_vel
+                                self.stun = self.hitsexp[0].kb[1]
+                                self.collision.move()
 
-                        if not self.hitsproj[0].flame:
-                            if self.hitsproj[0].explosive:
-                                EXPLSN = Explosion(self.hitsproj[0], self.hitsproj[0].explosive[0], self.hitsproj[0].explosive[1], self.hitsproj[0].explosive[2], self.hitsproj[0].explosive[3], self.hitsproj[0].explosive[4],self.hitsproj[0].explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30) 
-                            self.hitsproj[0].kill()
-                        else:
-                            self.hitsproj[0].affected.append(self)
+                            self.health -= self.hitsexp[0].dmg
+                            self.health = round(self.health)
+                            self.exp_immunity = self.iframes
+                            self.hitsexp[0].affected.append(self)
+                            
+
+            #Projectiles
+            if self.proj_immunity == 0:
+                self.hitsproj = pygame.sprite.spritecollide(self, g.projectiles, False)
+                if self.hitsproj:
+                    if self.hitsproj[0].team != self.team:
+                        if self.hitsproj[0].flame and self not in self.hitsproj[0].affected or not self.hitsproj[0].flame:
+                            if not self.kb_immune:
+                                #RESET KB VEC ROT
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot * -1)
+                                self.kb_angle = GetAngle(self.hitsproj[0].pos.x, self.hitsproj[0].pos.y, self.pos.x, self.pos.y - self.size[1]/2)
+                                self.kb_rot = self.kb_angle
+                                self.kb_vel = vec(0, self.hitsproj[0].kb[0])
+                                self.kb_vel = self.kb_vel.rotate(self.kb_rot)
+                                self.vel += self.kb_vel
+                                self.stun = self.hitsproj[0].kb[1]
+                                self.collision.move()
+                            
+                            self.proj_immunity = self.iframes
+                            self.health -= self.hitsproj[0].dmg
+                            self.health = round(self.health)
+
+                            if not self.hitsproj[0].flame:
+                                if self.hitsproj[0].explosive:
+                                    EXPLSN = Explosion(self.hitsproj[0], self.hitsproj[0].explosive[0], self.hitsproj[0].explosive[1], self.hitsproj[0].explosive[2], self.hitsproj[0].explosive[3], self.hitsproj[0].explosive[4],self.hitsproj[0].explosive[5],) #(self, target, size=50, maxsize=150, life=30, dmg=20, kb=40, stun=30) 
+                                self.hitsproj[0].kill()
+                            else:
+                                self.hitsproj[0].affected.append(self)
 
         if self.world_collide:
             
@@ -904,17 +940,17 @@ class Enemy(pygame.sprite.Sprite):
 #Boss enemy TORSO
 class Boss(Enemy):
     def __init__(self, originxy):
-        Enemy.__init__(self, originxy, size=(500, 500), color=v.ORANGE, speed=0.5, jumpvel=0, gravity=0, health=1000, dmg_mel=5, kb=(20, 20, True), kb_immune=True, world_collide=False, deaggro=0, cycle_len=3000)
+        Enemy.__init__(self, originxy, size=(500, 500), color=v.ORANGE, speed=0.5, jumpvel=0, gravity=0, health=1000, dmg_mel=5, kb=(20, 20, True), kb_immune=True, world_collide=False, deaggro=0, cycle_len=3000, tag="BOSS", buff="immune")
         BOSSARM_LEFT = Boss_Arm((0, 0), self, "left")
         BOSSARM_RIGHT = Boss_Arm((0, 0), self, "right")
         BOSSHEAD = Boss_Head((0,0), self)
-        BOSSHEALTH_HUD = HUD(self, (300, 80), v.PURPLE, (v.WIDTH-350, v.HEIGHT - 130), "boss_health")
+        BOSSHEALTH_HUD = HUD(self, (1500, 70), v.RED, (240, 25), "boss_health")
         self.aim = 0
         self.fric = -0.01
         self.cycle = 0
 
     def shoot(self):
-        BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=15)
+        BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=15, noclip=True)
 
     def brain(self):
         if v.BRAIN:
@@ -932,7 +968,7 @@ class Boss(Enemy):
             for center in g.map_center:
                 if v.BRAIN:
                     
-                    if len(self.limbs) != 0:
+                    if len(g.boss_limbs) != 0:
                         # FOLLOWING PLAYER
                         if self.cycle < 300:
                             if self.pos.x > player.pos.x: #OPTIMISE
@@ -999,6 +1035,7 @@ class Boss(Enemy):
 
                         if self.cycle == 30:
                             self.aiming()
+                            self.buff = None
 
                         if self.cycle > 30:
                             self.shoot()
@@ -1018,9 +1055,9 @@ class Boss(Enemy):
 #Boss enemy arm
 class Boss_Arm(Enemy):
     def __init__(self, originxy, target, facing="left"):
-        Enemy.__init__(self, originxy, world_collide=False, size=(70, 300), color=v.TITLEGREEN, gravity=0, jumpvel=0, health=500, kb=(5, 30, True))
+        Enemy.__init__(self, originxy, world_collide=False, size=(70, 300), color=v.TITLEGREEN, gravity=0, jumpvel=0, health=1000, kb=(5, 30, False))
         self.target = target
-        self.target.limbs.append(self)
+        g.boss_limbs.add(self)
         self.facing = facing
 
     def move(self):
@@ -1073,18 +1110,18 @@ class Boss_Arm(Enemy):
             BOSSBOMB = Projectile((75, 75), v.YELLOW, None, (0, v.GRAVITY), 180, (0, 20), None, None, 180, self, 0, (10, 30), explosive=(50, 200, 30, 30, 50, 30), originxy=self.rect.midtop, dmg=30)
         else:
             if origin == None:
-                BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
+                BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
             elif origin == "top":
-                BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midtop)
+                BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midtop)
             elif origin == "bottom":
-                BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midbottom)
+                BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10, originxy=self.rect.midbottom)
 
 
 class Boss_Head(Enemy):
     def __init__(self, originxy, target):
-        Enemy.__init__(self, originxy, world_collide=False, size=(100, 100), color=v.BLUE, gravity=0, jumpvel=0, speed=0, health=200)
+        Enemy.__init__(self, originxy, world_collide=False, size=(100, 100), color=v.BLUE, gravity=0, jumpvel=0, speed=0, health=1000)
         self.target = target
-        self.target.limbs.append(self)
+        g.boss_limbs.add(self)
 
     def move(self):
         self.margin = (0, -self.target.size[1]-0)
@@ -1143,9 +1180,9 @@ class Boss_Head(Enemy):
 
     def shoot(self, type=None):
         if type == None:
-            BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=30)
+            BOSSLASER = Projectile((50, 50), v.RED, None, None, self.aim, (0, 40), None, None, 60, self, 0, (10, 20), dmg=20, noclip=True)
         else:
-            BOSSMAGIC = Projectile((50, 50), v.GREEN, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
+            BOSSMAGIC = Projectile((50, 50), v.PURPLE, None, None, self.aim, (0, 30), None, None, 180, self, 12, (2, 10), dmg=10)
 
     def aiming(self):
         for player in g.players:

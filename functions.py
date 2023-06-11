@@ -156,6 +156,26 @@ def VictoryCheck():
                 ReturnToLvlSelect()
             else:
                 RestartLvl()
+
+def Cutscene():
+    ToggleControls()
+    v.CUTSCENE = True
+    for player in g.players:
+        player.buff = "manaboost"
+    for prop in g.props:
+        g.floors.remove(prop)
+
+def CutsceneCheck():
+    if v.CUTSCENE:
+        v.CUTSCENE_TIME -= 1
+        if v.CUTSCENE_TIME <= 0:
+            ToggleControls()
+            v.CUTSCENE = False
+            v.CUTSCENE_TIME = v.CUTSCENE_DUR
+            for player in g.players:
+                player.spawnboss()
+
+
             
 
 def LimitScroll():

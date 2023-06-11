@@ -81,6 +81,8 @@ def StartMap():
     WALL5 = cls.MapObject((200, 152), v.RED, (1980, 650), (g.walls, g.world_objects, g.proj_collidables))
     CLN6 = cls.MapObject((200, 24), v.RED, (1980, 738), (g.ceilings, g.world_objects, g.proj_collidables))
 
+    PT27 = cls.MapObject((200, 24), v.GREEN, (3000, 500), (g.world_objects, g.platforms))
+
     MAP_TXT2 = txt.Text(txt.font_subtitle, "DEATH TO THE NME", v.GREEN, (0,0))
     TXT_BOX2 = cls.MapText(color=v.PURPLE, text=MAP_TXT2, originxy=(980, 700))
 

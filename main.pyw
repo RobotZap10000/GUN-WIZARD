@@ -202,7 +202,7 @@ while True:
                 proj.move()
                 proj.collide()
                 proj.update()
-
+                
             for exp in g.explosions:
                 exp.update()
 
@@ -218,6 +218,7 @@ while True:
 
         #CHECK VICTORY
         func.VictoryCheck()
+        func.CutsceneCheck()
 
         #Surface drawing
         displaysurface.fill(v.BGGRAY)
