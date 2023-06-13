@@ -3,11 +3,10 @@ At long last, I've finally finished my game! Stay tuned to the announcements in 
 
 
 ## Installation
-Here's the link to my YouTube video of me explaining the steps you need to take to install this game:
-  LINK TO BE ADDED
+Click on the latest release to the right of your screen and follow the steps shown there.
   
 ## Further viewing
-See these two links for a demonstration of the game (with music!) and me talking about the development process:
-  LINKS TO BE ADDED
+See this link for the playlist with a demonstration of the game (with music!) and me talking about the development process:
+  https://www.youtube.com/playlist?list=PLhoYNgBsZY9OWgrPV3Wqvsfo_06V2EXty
 
   
