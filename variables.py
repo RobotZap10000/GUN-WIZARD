@@ -47,6 +47,7 @@ WHITE = (255, 255, 255)
 BUTTONGRAY = (100, 100, 100)
 BUTTONORANGE = (255, 90, 0)
 HEALTHGREEN = (2, 184, 44)
+Gloornp = (1, 1, 1)
 
 #Debugging variables
 FRAMESCOUNTED = 0
